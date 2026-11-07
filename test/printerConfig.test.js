@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { getPrinters, normalizePrinter, ensureUniqueIds } = require('../lib/printerConfig');
+const { getPrinters, normalizePrinter, ensureUniqueIds, ensureUniqueSerials } = require('../lib/printerConfig');
 
 describe('printerConfig', () => {
     it('migrates legacy single-printer configuration without losing connection settings', () => {
@@ -54,6 +54,21 @@ describe('printerConfig', () => {
 
     it('filters incomplete printer entries', () => {
         expect(getPrinters({ printers: [{ host: '10.0.0.1', serial: 'S1' }] })).to.have.lengthOf(0);
+    });
+
+    it('filters duplicate serials case-insensitively and reports them', () => {
+        const duplicates = [];
+        const printers = ensureUniqueSerials(
+            [
+                { id: 'A1', name: 'A1 Mini', serial: 'SERIAL-01' },
+                { id: 'X1', name: 'X1 Carbon', serial: 'serial-01' },
+                { id: 'P1', name: 'P1S', serial: 'SERIAL-02' },
+            ],
+            (printer, reason) => duplicates.push({ id: printer.id, reason }),
+        );
+
+        expect(printers.map(printer => printer.id)).to.deep.equal(['A1', 'P1']);
+        expect(duplicates).to.deep.equal([{ id: 'X1', reason: 'duplicate serial' }]);
     });
 
     it('normalizes accented printer names to stable ASCII IDs', () => {
