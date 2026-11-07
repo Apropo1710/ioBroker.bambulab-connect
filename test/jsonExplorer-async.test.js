@@ -90,4 +90,26 @@ describe('Local jsonExplorer async traversal', () => {
         expect(secondObjectWrites).to.equal(firstObjectWrites);
     });
 
+    it('skips repeated state writes when values are unchanged', async () => {
+        const payload = { temperature: 220, nested: { enabled: true } };
+
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+        const firstStateWrites = writes.filter(entry => entry.kind === 'state').length;
+
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+        const secondStateWrites = writes.filter(entry => entry.kind === 'state').length;
+
+        expect(firstStateWrites).to.equal(2);
+        expect(secondStateWrites).to.equal(firstStateWrites);
+    });
+
+    it('writes state again when the value changes', async () => {
+        await jsonExplorer.traverseJson({ temperature: 220 }, 'printer', false, false, 0, false);
+        await jsonExplorer.traverseJson({ temperature: 221 }, 'printer', false, false, 0, false);
+
+        const stateWrites = writes.filter(entry => entry.kind === 'state');
+        expect(stateWrites).to.have.lengthOf(2);
+        expect(stateWrites[1].state.val).to.equal(221);
+    });
+
 });
