@@ -69,9 +69,8 @@ The location of the API token and serial number depends on your printer model:
 [ ] Restructure/complete current control states in control folder
 [ ] Optimize state attributes definitions  
 
-## Support me
-If you like my work, please consider a personal donation  
-(this is a personal Donate link for DutchmanNL, no relation to the ioBroker Project !)  
+## Support the original adapter author
+The donation link below supports DutchmanNL, the original adapter author. It is not a donation link for the Bambulab Connect maintainer or the ioBroker project.  
 [![Donate](https://raw.githubusercontent.com/DrozmotiX/ioBroker.sourceanalytix/master/admin/button.png)](http://paypal.me/DutchmanNL)
 
 ## What is Sentry.io and what is reported to the servers of that company?
