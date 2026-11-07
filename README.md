@@ -44,6 +44,7 @@ The location of the API token and serial number depends on your printer model:
 | Printer-Model | Status                  |
 |---------------|-------------------------|
 | AMS           | :white_check_mark:      |
+| H2D           | :white_check_mark:      |
 | A1            | :white_check_mark:      |
 | P1p           | :white_check_mark:      |
 | P1s           | :white_check_mark:      |
