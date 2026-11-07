@@ -1010,7 +1010,7 @@ if (require.main !== module) {
     /**
      * @param {Partial<utils.AdapterOptions>} [options] - Adapter configuration options
      */
-    module.exports = options => new Bambulab(options);
+    module.exports = options => new BambulabConnect(options);
 } else {
     // otherwise start the instance directly
     new BambulabConnect();
