@@ -291,12 +291,12 @@ class BambulabConnect extends utils.Adapter {
                 // Store original stg_cur value for printer state checking before conversion
                 const originalStgCur = message.print.stg_cur;
 
-                // Update current printing state for safety checks
-                currentPrintingState = originalStgCur;
-
-                if (message.print.stg_cur != null) {
-                    message.print.stg_cur = convert.stageParser(message.print.stg_cur);
-                    message.print.control.stg_cur = convert.stageParser(message.print.stg_cur);
+                // Keep the last known printing state when a delta report omits stg_cur.
+                // This state is also used to block potentially dangerous G-code commands.
+                if (originalStgCur != null) {
+                    currentPrintingState = originalStgCur;
+                    message.print.stg_cur = convert.stageParser(originalStgCur);
+                    message.print.control.stg_cur = message.print.stg_cur;
                 }
                 if (message.print.big_fan1_speed != null) {
                     message.print.big_fan1_speed = convert.fanSpeed(message.print.big_fan1_speed);
