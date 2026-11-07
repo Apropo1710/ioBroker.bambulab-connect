@@ -21,7 +21,6 @@ const clientConnection = {
     connectError: false,
     initiated: false,
     reconnectMessageShown: false, // Track if we've shown the reconnection message
-    messageBuffer: false, // Track if message buffer is active
 };
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
@@ -226,28 +225,8 @@ class BambulabConnect extends utils.Adapter {
      */
     async messageHandler(message) {
         try {
-            // Implement message buffer to avoid processing too many messages in a short time
-            if (clientConnection.messageBuffer === false) {
-                try {
-                    if (this.log.level === 'debug' || this.log.level === 'silly') {
-                        this.log.debug(`Message buffer inactive, message processing`);
-                    }
-                    if (this.config.messageBuffer > 0) {
-                        clientConnection.messageBuffer = true;
-                        timeouts['messageBuffer'] = this.setTimeout(() => {
-                            // Request data for P1p printer series
-                            clientConnection.messageBuffer = false;
-                        }, this.config.messageBuffer * 1000);
-                    }
-                } catch (e) {
-                    this.log.error(`[MQTT Message handler] ${e}`);
-                }
-            } else {
-                if (this.log.level === 'debug' || this.log.level === 'silly') {
-                    this.log.debug(`Message buffer active, skipping message processing`);
-                }
-                return; // Ignore Message
-            }
+            // Process every MQTT report. Printer reports are often partial/delta updates;
+            // dropping messages here can leave ioBroker states stale or incomplete.
 
             if (message.print) {
                 if (this.log.level === 'debug' || this.log.level === 'silly') {
