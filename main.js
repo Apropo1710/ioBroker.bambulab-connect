@@ -14,7 +14,7 @@ const { default: axios } = require('axios'); // Http request library
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
-const { getPrinters, ensureUniqueIds } = require('./lib/printerConfig');
+const { getPrinters, ensureUniqueIds, ensureUniqueSerials } = require('./lib/printerConfig');
 const { createPrinterContext, getPrinterIdFromStateId } = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
@@ -62,7 +62,12 @@ class BambulabConnect extends utils.Adapter {
         await this.setState('info.connection', false, true);
         await this.loadHMSErrorCodeTranslations();
 
-        const printers = ensureUniqueIds(getPrinters(this.config));
+        const printersWithUniqueIds = ensureUniqueIds(getPrinters(this.config));
+        const printers = ensureUniqueSerials(printersWithUniqueIds, (printer, reason) => {
+            this.log.error(
+                `Skipping configured printer "${printer.name || printer.id}" (${printer.serial || 'no serial'}): ${reason}.`,
+            );
+        });
         if (!printers.length) {
             this.log.error(
                 'No valid printer configured. Please add at least one printer with IP, serial and access token.',
