@@ -40,15 +40,20 @@ The location of the API token and serial number depends on your printer model:
 
 **Note:** You must select your Printer model correctly in the adapter settings. Only the X1 series allows pushing of messages, P1x series needs to request by interval setting (default every 5 seconds)
 
-## Supported models
-| Printer-Model | Status                  |
-|---------------|-------------------------|
-| AMS           | :white_check_mark:      |
-| H2D           | :white_check_mark:      |
-| A1            | :white_check_mark:      |
-| P1p           | :white_check_mark:      |
-| P1s           | :white_check_mark:      |
-| X1            | :white_check_mark:      |
+## Printer model compatibility
+
+The adapter uses the local MQTT interface shared by many Bambu Lab printers. Selecting a model enables the appropriate adapter profile; **a model appearing in the list does not by itself mean that every feature has been validated on that hardware**.
+
+| Model | Compatibility status |
+|---|---|
+| A1 mini, A1 | Existing A1-family profile; hardware verification still needed per model |
+| P1P, P1S | Existing P1 profile; polling is enabled |
+| X1, X1 Carbon (X1C), X1E | Existing X1-family profile |
+| H2D | Existing H2D-family profile |
+| A2L, P2S, X2D, H2D Pro, H2S, H2C, H3C | Newly selectable / experimental; not yet hardware-validated |
+
+The legacy series choices (A1-Series, H2D-Series, P1-Series, X1-Series) remain available for existing installations. H2C and H3C have multi-tool architectures; their tool/nozzle-specific telemetry and controls require dedicated protocol validation and must not be assumed to work merely because common MQTT status data is received.
+
 
 ## Supported commands
 | Command            | X1C                 | X1                  | P1P                      | P1S                      | A1                       |
