@@ -690,19 +690,23 @@ class Bambulab extends utils.Adapter {
                 }
             }
         } catch (e) {
-            if (e.code === 'ECONNABORTED' || e.message.includes('timeout')) {
+            // Axios errors normally expose code/message, but keep error handling safe for
+            // unexpected thrown values as well.
+            const errorCode = e && typeof e === 'object' ? e.code : undefined;
+            const errorMessage = e && typeof e === 'object' && e.message ? e.message : String(e);
+            if (errorCode === 'ECONNABORTED' || errorMessage.includes('timeout')) {
                 this.log.warn(
                     `Translation definitions not updated, cannot connect to Bambulab documentation (timeout)`,
                 );
-                this.log.debug(`[loadHMSErrorCodeTranslations] Timeout details: ${e.message}`);
-            } else if (e.code === 'ENOTFOUND' || e.code === 'ECONNREFUSED') {
+                this.log.debug(`[loadHMSErrorCodeTranslations] Timeout details: ${errorMessage}`);
+            } else if (errorCode === 'ENOTFOUND' || errorCode === 'ECONNREFUSED') {
                 this.log.warn(
                     `Translation definitions not updated, cannot connect to Bambulab documentation (network error)`,
                 );
-                this.log.debug(`[loadHMSErrorCodeTranslations] Network error details: ${e.message}`);
+                this.log.debug(`[loadHMSErrorCodeTranslations] Network error details: ${errorMessage}`);
             } else {
                 this.log.warn(`Translation definitions not updated, error downloading from Bambulab documentation`);
-                this.log.debug(`[loadHMSErrorCodeTranslations] Error details: ${e.message} | ${e.stack}`);
+                this.log.debug(`[loadHMSErrorCodeTranslations] Error details: ${errorMessage} | ${e && e.stack ? e.stack : ''}`);
             }
         }
     }
