@@ -1,17 +1,10 @@
 <img src="admin/bambulab.png" alt="Logo" width="200"/>
 
-# ioBroker.bambulab
+# Bambulab Connect
 
-[![NPM version](https://img.shields.io/npm/v/iobroker.bambulab.svg)](https://www.npmjs.com/package/iobroker.bambulab)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.bambulab.svg)](https://www.npmjs.com/package/iobroker.bambulab)
-![Number of Installations](https://iobroker.live/badges/bambulab-installed.svg)
-![Current version in stable repository](https://iobroker.live/badges/bambulab-stable.svg)
+[![Test and Release](https://github.com/Apropo1710/ioBroker.bambulab/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/Apropo1710/ioBroker.bambulab/actions/workflows/test-and-release.yml)
 
-[![NPM](https://nodei.co/npm/iobroker.bambulab.png?downloads=true)](https://nodei.co/npm/iobroker.bambulab/)
-
-**Tests:** ![Test and Release](https://github.com/DrozmotiX/ioBroker.bambulab/workflows/Test%20and%20Release/badge.svg)
-
-## Bambulab 3D-Printing adapter for ioBroker
+## Bambulab Connect – 3D-Printing adapter for ioBroker
 
 ## Getting started
 
