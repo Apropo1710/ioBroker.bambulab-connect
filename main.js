@@ -14,6 +14,8 @@ const { default: axios } = require('axios'); // Http request library
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
+const { getPrinters, ensureUniqueIds } = require('./lib/printerConfig');
+const { createPrinterContext, getPrinterIdFromStateId } = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
@@ -41,6 +43,7 @@ class BambulabConnect extends utils.Adapter {
         };
         this.currentPrintingState = null;
         this.messageQueue = Promise.resolve();
+        this.printers = new Map();
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
@@ -51,22 +54,64 @@ class BambulabConnect extends utils.Adapter {
      * Is called when databases are connected and adapter received configuration.
      */
     async onReady() {
-        // Initialize your adapter here
-
-        // Get system language, use EN as fallback in case of errors
         const sys_conf = await this.getForeignObjectAsync('system.config');
         if (sys_conf && sys_conf.common.language) {
             language = sys_conf.common.language;
         }
 
-        // Reset the connection indicator during startup
         await this.setState('info.connection', false, true);
-
-        // Download / Update HMS error Codes
         await this.loadHMSErrorCodeTranslations();
 
-        // Handle MQTT messages
-        this.mqttMessageHandle();
+        const printers = ensureUniqueIds(getPrinters(this.config));
+        if (!printers.length) {
+            this.log.error('No valid printer configured. Please add at least one printer with IP, serial and access token.');
+            return;
+        }
+
+        for (const printer of printers) {
+            const context = createPrinterContext(this, printer);
+            this.printers.set(printer.id, context);
+
+            // Per-printer connection state; the instance-wide indicator is true
+            // whenever at least one configured printer is connected.
+            await this.extendObjectAsync(`${printer.id}.info`, {
+                type: 'channel',
+                common: { name: `${context.printerName} information` },
+                native: {},
+            });
+            await this.extendObjectAsync(`${printer.id}.info.connection`, {
+                type: 'state',
+                common: {
+                    name: 'Printer connected',
+                    type: 'boolean',
+                    role: 'indicator.connected',
+                    read: true,
+                    write: false,
+                    def: false,
+                },
+                native: {},
+            });
+            await this.setStateAsync(`${printer.id}.info.connection`, { val: false, ack: true });
+
+            const adapterSetState = this.setState.bind(this);
+            context.setState = (id, state, ack) => {
+                if (id !== 'info.connection') {
+                    return adapterSetState(id, state, ack);
+                }
+
+                const printerStateId = `${context.printerId}.info.connection`;
+                const writePrinterState =
+                    state && typeof state === 'object'
+                        ? adapterSetState(printerStateId, state)
+                        : adapterSetState(printerStateId, state, ack);
+                const anyConnected = [...this.printers.values()].some(item => item.clientConnection.connected);
+                const writeInstanceState = adapterSetState('info.connection', anyConnected, true);
+                return Promise.all([writePrinterState, writeInstanceState]);
+            };
+
+            this.log.info(`Starting printer runtime "${context.printerName}" (${printer.serial}) at ${printer.host}`);
+            context.mqttMessageHandle();
+        }
     }
 
     /**
@@ -207,7 +252,7 @@ class BambulabConnect extends utils.Adapter {
                 this.setState('info.connection', false, true);
 
                 // Try to reconnect by creating a new this.client instead of using reconnect()
-                if (timeouts[this.config.serial]) {
+                if (timeouts[this.printerId]) {
                     this.clearTimeout(timeouts[this.config.serial]);
                     timeouts[this.config.serial] = null;
                 }
@@ -402,7 +447,7 @@ class BambulabConnect extends utils.Adapter {
                 // MQTT print reports often repeat HMS data unchanged; avoid
                 // writing the same translated error list to ioBroker each time.
                 if (this.lastHmsErrorCode !== hmsErrorCodeJson) {
-                    await this.setState(`${this.config.serial}.hms.hmsErrorCode`, {
+                    await this.setState(`${this.printerId}.hms.hmsErrorCode`, {
                         val: hmsErrorCodeJson,
                         ack: true,
                     });
@@ -455,7 +500,7 @@ class BambulabConnect extends utils.Adapter {
             // Explore JSON & create states
             const returnJONexplorer = await jsonExplorer.traverseJson(
                 message.print,
-                this.config.serial,
+                this.printerId,
                 false,
                 false,
                 0,
@@ -536,7 +581,7 @@ class BambulabConnect extends utils.Adapter {
         this.publishMQTTmessages(msg);
 
         // Keep a polling timer only for P1-Series printers.
-        if (timeouts[`${this.config.serial}_dataPolling`]) {
+        if (timeouts[`${this.printerId}_dataPolling`]) {
             this.clearTimeout(timeouts[`${this.config.serial}_dataPolling`]);
             timeouts[`${this.config.serial}_dataPolling`] = null;
         }
@@ -632,7 +677,7 @@ class BambulabConnect extends utils.Adapter {
             },
         };
 
-        this.extendObject(`${this.config.serial}.control`, {
+        this.extendObject(`${this.printerId}.control`, {
             type: 'channel',
             common: {
                 name: `Control device`,
@@ -640,7 +685,7 @@ class BambulabConnect extends utils.Adapter {
         });
 
         for (const state in controlStates) {
-            this.extendObject(`${this.config.serial}.control.${state}`, {
+            this.extendObject(`${this.printerId}.control.${state}`, {
                 type: 'state',
                 common: controlStates[state],
             });
@@ -649,7 +694,7 @@ class BambulabConnect extends utils.Adapter {
         }
 
         for (const state in hmstates) {
-            this.extendObject(`${this.config.serial}.hms.${state}`, {
+            this.extendObject(`${this.printerId}.hms.${state}`, {
                 type: 'state',
                 common: hmstates[state],
             });
@@ -761,32 +806,29 @@ class BambulabConnect extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            // Stop jsonExplorer expiry timers so they cannot write states after unload.
             jsonExplorer.clearStateExpireTimers();
 
-            // Close running timers
-            if (timeouts[this.config.serial]) {
-                this.clearTimeout(timeouts[this.config.serial]);
-                timeouts[this.config.serial] = null;
-            }
-            if (timeouts[`${this.config.serial}_dataPolling`]) {
-                this.clearTimeout(timeouts[`${this.config.serial}_dataPolling`]);
-                timeouts[`${this.config.serial}_dataPolling`] = null;
+            for (const context of this.printers.values()) {
+                for (const timerKey of [context.printerId, `${context.printerId}_dataPolling`]) {
+                    if (timeouts[timerKey]) {
+                        this.clearTimeout(timeouts[timerKey]);
+                        timeouts[timerKey] = null;
+                    }
+                }
+
+                if (context.client) {
+                    context.client.removeAllListeners();
+                    context.client.end();
+                    context.client = null;
+                }
+
+                context.clientConnection.connected = false;
+                context.clientConnection.connectError = false;
+                context.clientConnection.initiated = false;
+                context.currentPrintingState = null;
             }
 
-            // Close MQTT connection without allowing shutdown events to update states
-            // or schedule a reconnect while the adapter is unloading.
-            if (this.client) {
-                this.client.removeAllListeners();
-                this.client.end();
-                this.client = null;
-            }
-
-            this.clientConnection.connected = false;
-            this.clientConnection.connectError = false;
-            this.clientConnection.initiated = false;
-            this.currentPrintingState = null;
-
+            this.printers.clear();
             callback();
         } catch (e) {
             this.log.error(`[onUnload] ${e} | ${e.stack}`);
@@ -859,6 +901,14 @@ class BambulabConnect extends utils.Adapter {
     }
 
     async onStateChange(id, state) {
+        const printerId = getPrinterIdFromStateId(id, this.namespace, [...this.printers.keys()]);
+        if (!printerId) {
+            return;
+        }
+        return this.printers.get(printerId).handlePrinterStateChange(id, state);
+    }
+
+    async handlePrinterStateChange(id, state) {
         if (state && state.val != null) {
             // Only act on trigger if value is not Acknowledged
             if (!state.ack) {
