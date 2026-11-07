@@ -820,7 +820,7 @@ class Bambulab extends utils.Adapter {
                             return; // Exit without sending the command
                         }
 
-                        msg = msg = {
+                        msg = {
                             print: {
                                 command: 'gcode_line',
                                 param: `${state.val}`,
@@ -860,7 +860,7 @@ class Bambulab extends utils.Adapter {
                         break;
                     case 'lightToolHeadLogo':
                         if (state.val === true) {
-                            msg = msg = {
+                            msg = {
                                 print: {
                                     command: 'gcode_line',
                                     param: `M960 S5 P1 \n`,
@@ -868,7 +868,7 @@ class Bambulab extends utils.Adapter {
                                 },
                             };
                         } else if (state.val === false) {
-                            msg = msg = {
+                            msg = {
                                 print: {
                                     command: 'gcode_line',
                                     param: `M960 S5 P0 \n`,
@@ -977,7 +977,7 @@ class Bambulab extends utils.Adapter {
                             return; // Exit without sending the command
                         }
 
-                        msg = msg = {
+                        msg = {
                             print: {
                                 command: 'gcode_line',
                                 param: 'G28 \n',
