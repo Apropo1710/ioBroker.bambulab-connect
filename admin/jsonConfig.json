@@ -2,147 +2,93 @@
     "i18n": true,
     "type": "panel",
     "items": {
-        "host": {
-            "type": "text",
-            "label": "Printer IP address",
-            "newLine": true,
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4
-        },
-        "Password": {
-            "type": "password",
-            "label": "Access Token",
-            "help": "API token from printer network settings - see README for detailed instructions per printer model",
-            "newLine": true,
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4
-        },
-        "serial": {
-            "type": "text",
-            "label": "Serial number of device",
-            "help": "Device serial number from printer network settings - required for authentication",
-            "newLine": false,
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4
-        },
-        "printerModel": {
-            "newLine": true,
-            "type": "select",
-            "label": "Printer Model",
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4,
-            "options": [
+        "printers": {
+            "type": "table",
+            "label": "BambuLab printers",
+            "help": "Add one row for each printer. All printers are managed independently by this adapter instance.",
+            "titleAttribute": "name",
+            "encryptedAttributes": ["Password"],
+            "items": [
                 {
-                    "label": "A1 mini",
-                    "value": "A1 mini"
+                    "attr": "id",
+                    "type": "text",
+                    "title": "Object ID",
+                    "width": "15%",
+                    "default": ""
                 },
                 {
-                    "label": "A1",
-                    "value": "A1"
+                    "attr": "name",
+                    "type": "text",
+                    "title": "Display name",
+                    "width": "15%",
+                    "default": ""
                 },
                 {
-                    "label": "A2L (experimental)",
-                    "value": "A2L"
+                    "attr": "host",
+                    "type": "text",
+                    "title": "IP address",
+                    "width": "15%",
+                    "default": ""
                 },
                 {
-                    "label": "P1P",
-                    "value": "P1P"
+                    "attr": "serial",
+                    "type": "text",
+                    "title": "Serial number",
+                    "width": "18%",
+                    "default": ""
                 },
                 {
-                    "label": "P1S",
-                    "value": "P1S"
+                    "attr": "Password",
+                    "type": "password",
+                    "title": "Access token",
+                    "width": "15%",
+                    "default": ""
                 },
                 {
-                    "label": "P2S (experimental)",
-                    "value": "P2S"
+                    "attr": "printerModel",
+                    "type": "select",
+                    "title": "Model",
+                    "width": "15%",
+                    "default": "P1-Series",
+                    "options": [
+                        {"label": "A1 mini", "value": "A1 mini"},
+                        {"label": "A1", "value": "A1"},
+                        {"label": "A2L (experimental)", "value": "A2L"},
+                        {"label": "P1P", "value": "P1P"},
+                        {"label": "P1S", "value": "P1S"},
+                        {"label": "P2S (experimental)", "value": "P2S"},
+                        {"label": "X1", "value": "X1"},
+                        {"label": "X1 Carbon (X1C)", "value": "X1C"},
+                        {"label": "X1E", "value": "X1E"},
+                        {"label": "X2D (experimental)", "value": "X2D"},
+                        {"label": "H2D", "value": "H2D"},
+                        {"label": "H2D Pro (experimental)", "value": "H2D Pro"},
+                        {"label": "H2S (experimental)", "value": "H2S"},
+                        {"label": "H2C (experimental)", "value": "H2C"},
+                        {"label": "H3C (experimental)", "value": "H3C"},
+                        {"label": "Legacy: A1-Series", "value": "A1-Series"},
+                        {"label": "Legacy: H2D-Series", "value": "H2D-Series"},
+                        {"label": "Legacy: P1-Series", "value": "P1-Series"},
+                        {"label": "Legacy: X1-Series", "value": "X1-Series"}
+                    ]
                 },
                 {
-                    "label": "X1",
-                    "value": "X1"
-                },
-                {
-                    "label": "X1 Carbon (X1C)",
-                    "value": "X1C"
-                },
-                {
-                    "label": "X1E",
-                    "value": "X1E"
-                },
-                {
-                    "label": "X2D (experimental)",
-                    "value": "X2D"
-                },
-                {
-                    "label": "H2D",
-                    "value": "H2D"
-                },
-                {
-                    "label": "H2D Pro (experimental)",
-                    "value": "H2D Pro"
-                },
-                {
-                    "label": "H2S (experimental)",
-                    "value": "H2S"
-                },
-                {
-                    "label": "H2C (experimental)",
-                    "value": "H2C"
-                },
-                {
-                    "label": "H3C (experimental)",
-                    "value": "H3C"
-                },
-                {
-                    "label": "Legacy: A1-Series",
-                    "value": "A1-Series"
-                },
-                {
-                    "label": "Legacy: H2D-Series",
-                    "value": "H2D-Series"
-                },
-                {
-                    "label": "Legacy: P1-Series",
-                    "value": "P1-Series"
-                },
-                {
-                    "label": "Legacy: X1-Series",
-                    "value": "X1-Series"
+                    "attr": "requestInterval",
+                    "type": "number",
+                    "title": "Polling interval (s)",
+                    "width": "12%",
+                    "default": 300,
+                    "min": 60,
+                    "max": 36000
                 }
-            ],
-            "default": "P1-Series",
-            "help": "Select the exact printer model. Experimental entries have not yet been validated on hardware; legacy series options remain for existing installations."
-        },
-        "requestInterval": {
-            "type": "number",
-            "label": "Seconds between data polling",
-            "help": "Full status refresh (pushall) interval in seconds for P1P/P1S. Recommended default: 300 seconds (5 minutes); shorter intervals may cause printer lag.",
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4,
-            "default": 300,
-            "min": 60,
-            "max": 36000
+            ]
         },
         "getDataFiles": {
             "newLine": true,
             "type": "fileSelector",
             "upload": "/",
             "label": "Upload g-code file",
-            "help": "Here you can upload files, like g-code, to send to the printer",
+            "help": "Select a file to upload to the ioBroker file storage.",
             "xs": 12,
             "sm": 12,
             "md": 6,
