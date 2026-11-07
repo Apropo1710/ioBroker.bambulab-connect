@@ -228,8 +228,8 @@ class BambulabConnect extends utils.Adapter {
                 // Subscribe on a printer topic after connection
                 client.subscribe([`device/${this.config.serial}/report`], error => {
                     if (this.client !== client || this.shuttingDown) {
-                    return;
-                }
+                        return;
+                    }
                     if (error) {
                         this.log.warn(`MQTT subscribe failed: ${error.message || error}`);
                     }
