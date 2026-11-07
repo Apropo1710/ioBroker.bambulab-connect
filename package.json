@@ -3,8 +3,7 @@
   "version": "0.4.3",
   "description": "Bambulab Connect: Connects to Bambu Lab 3D printers to retrieve print data and control printer functions",
   "author": {
-    "name": "DutchmanNL",
-    "email": "oss@drozmotix.eu"
+    "name": "Apropo1710"
   },
   "homepage": "https://github.com/Apropo1710/ioBroker.bambulab-connect",
   "license": "MIT",
