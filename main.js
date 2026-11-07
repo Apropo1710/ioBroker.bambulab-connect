@@ -325,7 +325,7 @@ class BambulabConnect extends utils.Adapter {
                     //    2 = Paused
                     //    3 = Completed
                     //    4+ = Other working states (update as needed)
-                    if (originalStgCur != null && originalStgCur >= 0) {
+                    if (this.currentPrintingState != null && this.currentPrintingState >= 0) {
                         message.print.finishTime = new Date(
                             new Date().getTime() + message.print.mc_remaining_time * 60000,
                         ).toISOString();
