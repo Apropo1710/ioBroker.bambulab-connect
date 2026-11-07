@@ -472,10 +472,17 @@ class Bambulab extends utils.Adapter {
             this.log.debug(`Publish message ${JSON.stringify(msg)}`);
         }
 
+        // State changes can trigger commands while the printer is disconnected.
+        // Avoid dereferencing a missing or disconnected MQTT client.
+        if (!client || !client.connected) {
+            this.log.debug('Skipping MQTT publish because the printer is not connected');
+            return;
+        }
+
         const topic = `device/${this.config.serial}/request`;
         client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
             if (error) {
-                console.error(error);
+                this.log.warn(`MQTT publish failed: ${error.message || error}`);
             }
         });
     }
