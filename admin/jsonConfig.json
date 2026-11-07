@@ -45,29 +45,89 @@
             "xl": 4,
             "options": [
                 {
-                    "label": "A1-Series",
+                    "label": "A1 mini",
+                    "value": "A1 mini"
+                },
+                {
+                    "label": "A1",
+                    "value": "A1"
+                },
+                {
+                    "label": "A2L (experimental)",
+                    "value": "A2L"
+                },
+                {
+                    "label": "P1P",
+                    "value": "P1P"
+                },
+                {
+                    "label": "P1S",
+                    "value": "P1S"
+                },
+                {
+                    "label": "P2S (experimental)",
+                    "value": "P2S"
+                },
+                {
+                    "label": "X1",
+                    "value": "X1"
+                },
+                {
+                    "label": "X1 Carbon (X1C)",
+                    "value": "X1C"
+                },
+                {
+                    "label": "X1E",
+                    "value": "X1E"
+                },
+                {
+                    "label": "X2D (experimental)",
+                    "value": "X2D"
+                },
+                {
+                    "label": "H2D",
+                    "value": "H2D"
+                },
+                {
+                    "label": "H2D Pro (experimental)",
+                    "value": "H2D Pro"
+                },
+                {
+                    "label": "H2S (experimental)",
+                    "value": "H2S"
+                },
+                {
+                    "label": "H2C (experimental)",
+                    "value": "H2C"
+                },
+                {
+                    "label": "H3C (experimental)",
+                    "value": "H3C"
+                },
+                {
+                    "label": "Legacy: A1-Series",
                     "value": "A1-Series"
                 },
                 {
-                    "label": "H2D-Series",
+                    "label": "Legacy: H2D-Series",
                     "value": "H2D-Series"
                 },
                 {
-                    "label": "P1-Series",
+                    "label": "Legacy: P1-Series",
                     "value": "P1-Series"
                 },
                 {
-                    "label": "X1-Series",
+                    "label": "Legacy: X1-Series",
                     "value": "X1-Series"
                 }
             ],
             "default": "P1-Series",
-            "help": "Please select your printer model"
+            "help": "Select the exact printer model. Experimental entries have not yet been validated on hardware; legacy series options remain for existing installations."
         },
         "requestInterval": {
             "type": "number",
             "label": "Seconds between data polling",
-            "help": "Only used for P1x series",
+            "help": "Polling interval for P1P/P1S and legacy P1-Series profile.",
             "xs": 12,
             "sm": 12,
             "md": 6,
@@ -77,7 +137,6 @@
             "min": 1,
             "max": 36000
         },
-
         "getDataFiles": {
             "newLine": true,
             "type": "fileSelector",
