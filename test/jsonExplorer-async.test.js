@@ -103,6 +103,20 @@ describe('Local jsonExplorer async traversal', () => {
         expect(secondStateWrites).to.equal(firstStateWrites);
     });
 
+    it('resets runtime deduplication caches on init', async () => {
+        const payload = { temperature: 220, nested: { enabled: true } };
+
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+        const firstStateWrites = writes.filter(entry => entry.kind === 'state').length;
+        const firstObjectWrites = writes.filter(entry => entry.kind === 'object').length;
+
+        jsonExplorer.init(mockAdapter, {});
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+
+        expect(writes.filter(entry => entry.kind === 'state')).to.have.lengthOf(firstStateWrites * 2);
+        expect(writes.filter(entry => entry.kind === 'object')).to.have.lengthOf(firstObjectWrites * 2);
+    });
+
     it('writes state again when the value changes', async () => {
         await jsonExplorer.traverseJson({ temperature: 220 }, 'printer', false, false, 0, false);
         await jsonExplorer.traverseJson({ temperature: 221 }, 'printer', false, false, 0, false);
