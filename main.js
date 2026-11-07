@@ -161,8 +161,8 @@ class BambulabConnect extends utils.Adapter {
                 if (!this.clientConnection.connected) {
                     this.log.info(`Printer connected successfully`);
                 }
-                this.setState('info.connection', true, true);
                 this.clientConnection.connected = true;
+                this.setState('info.connection', true, true);
                 this.clientConnection.connectError = false;
                 this.clientConnection.initiated = false; // Reset initiated flag on successful connection
                 this.clientConnection.reconnectMessageShown = false; // Reset for future disconnections
@@ -232,8 +232,8 @@ class BambulabConnect extends utils.Adapter {
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
                     );
                 }
-                this.setState('info.connection', false, true);
                 this.clientConnection.connected = false;
+                this.setState('info.connection', false, true);
                 this.clientConnection.connectError = true;
                 this.clientConnection.initiated = false;
             });
@@ -249,6 +249,7 @@ class BambulabConnect extends utils.Adapter {
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
                     );
                 }
+                this.clientConnection.connected = false;
                 this.setState('info.connection', false, true);
 
                 // Try to reconnect by creating a new this.client instead of using reconnect()
