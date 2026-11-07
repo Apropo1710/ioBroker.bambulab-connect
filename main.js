@@ -425,13 +425,7 @@ class BambulabConnect extends utils.Adapter {
             if (vtTray && vtTray.remain_g == null) {
                 const pct = Number(vtTray.remain);
                 const nominalG = Number(vtTray.tray_weight);
-                if (
-                    Number.isFinite(pct) &&
-                    pct >= 0 &&
-                    pct <= 100 &&
-                    Number.isFinite(nominalG) &&
-                    nominalG > 0
-                ) {
+                if (Number.isFinite(pct) && pct >= 0 && pct <= 100 && Number.isFinite(nominalG) && nominalG > 0) {
                     vtTray.remain_g = Math.round((nominalG * pct) / 100);
                 }
             }
