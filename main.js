@@ -784,7 +784,8 @@ class BambulabConnect extends utils.Adapter {
         // Check every line and recognize compact G-code (e.g. G1X10), too.
         // Match command numbers as a whole so G10 is not mistaken for G1.
         const lines = String(gcodeParam).toUpperCase().split(/\r?\n/);
-        return lines.some(line => /^G(?:0|1|28|90|91)(?=$|[A-Z\s;])/.test(line.trim()));
+        const blockedCommandPattern = new RegExp(`^(${blockedCommandsDuringPrinting.join('|')})(?=$|[A-Z\\s;])`);
+        return lines.some(line => blockedCommandPattern.test(line.trim()));
     }
 
     async onStateChange(id, state) {
