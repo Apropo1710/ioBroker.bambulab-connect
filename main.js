@@ -106,7 +106,7 @@ class Bambulab extends utils.Adapter {
             client = mqtt.connect(`mqtts://${this.config.host}:8883`, {
                 username: 'bblp',
                 password: this.config.Password,
-                reconnectPeriod: 30,
+                reconnectPeriod: 30000,
                 rejectUnauthorized: false,
             });
 
