@@ -798,7 +798,7 @@ class Bambulab extends utils.Adapter {
         if (state && state.val != null) {
             // Only act on trigger if value is not Acknowledged
             if (!state.ack) {
-                console.debug(`${id} | ${state.val}`);
+                this.log.debug(`${id} | ${state.val}`);
                 let msg;
                 const checkID = id.split('.');
 
