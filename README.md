@@ -15,9 +15,14 @@ Bambulab Connect is a community-maintained derivative of the original [ioBroker.
 With credits to [kmxak](https://forum.iobroker.net/user/kmxak), [djalexz](https://forum.iobroker.net/user/djalexz), all other involved and inspired by [this forum thread](https://forum.iobroker.net/topic/61585/bambu-lab-3d-drucker-mqtt-integration)
 this adapter integrates Bambulab 3D-Printers into ioBroker.
 
-Please provide your Printer IP-Address, API token and serial number in adapter settings;
-these are required for a local connection (no cloud involved) to your printer.
-These credentials are stored locally and not shared to third parties.
+Add one row per BambuLab printer in the adapter settings. Each row needs an object ID,
+display name (optional), IP address, access token, serial number and model. All printers
+can be managed in one adapter instance; their MQTT connections and state trees are isolated.
+The object ID should be a short, unique name such as `A1_Mini`, `X1C` or `H2C`.
+
+The adapter connects locally over MQTT (no cloud connection for printer data). Access tokens
+are stored using ioBroker's encrypted native configuration. Existing single-printer settings
+are migrated automatically if the new printer table is empty.
 
 ## Finding the API Token and Serial Number
 
@@ -38,7 +43,7 @@ The location of the API token and serial number depends on your printer model:
 2. The access token is directly visible in network settings
 3. Serial number can be found in the same menu or in device information
 
-**Note:** You must select your Printer model correctly in the adapter settings. Only the X1 series allows pushing of messages, P1x series needs to request by interval setting (default every 5 seconds)
+**Note:** You must select your Printer model correctly in the adapter settings. X1-family printers provide push updates. P1-series printers additionally use a conservative full refresh interval (minimum 300 seconds)
 
 ## Printer model compatibility
 
