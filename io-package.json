@@ -152,7 +152,8 @@
         "Password": "",
         "printerModel": "X1",
         "requestInterval": 5,
-        "messageBuffer": 5
+        "messageBuffer": 5,
+        "printers": []
     },
     "objects": [],
     "instanceObjects": [
