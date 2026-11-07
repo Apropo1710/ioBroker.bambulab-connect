@@ -31,14 +31,14 @@ let language = 'en'; // System language to handle error code translations, defau
 const blockedCommandsDuringPrinting = ['G0', 'G1', 'G28', 'G90', 'G91'];
 let currentPrintingState = null; // Track current printing state for safety checks
 
-class Bambulab extends utils.Adapter {
+class BambulabConnect extends utils.Adapter {
     /**
      * @param {Partial<utils.AdapterOptions>} [options] - Adapter configuration options
      */
     constructor(options) {
         super({
             ...options,
-            name: 'bambulab',
+            name: 'bambulab-connect',
         });
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -1013,5 +1013,5 @@ if (require.main !== module) {
     module.exports = options => new Bambulab(options);
 } else {
     // otherwise start the instance directly
-    new Bambulab();
+    new BambulabConnect();
 }
