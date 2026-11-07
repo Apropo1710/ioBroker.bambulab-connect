@@ -663,7 +663,10 @@ class BambulabConnect extends utils.Adapter {
 
             if (currentTran == null || currentTran.val === '') {
                 this.log.info(`No Local translation available, version ${onlineTran.ver} downloaded`);
-                await this.setStateAsync(`info.hmsErrorCodeTranslations`, { val: JSON.stringify(onlineTranObj), ack: true });
+                await this.setStateAsync(`info.hmsErrorCodeTranslations`, {
+                    val: JSON.stringify(onlineTranObj),
+                    ack: true,
+                });
                 await loadTranslationsToMemory(onlineTranObj);
             } else if (typeof currentTran.val === 'string' && currentTran.val !== '') {
                 const currentTranObj = JSON.parse(currentTran.val);
@@ -706,7 +709,9 @@ class BambulabConnect extends utils.Adapter {
                 this.log.debug(`[loadHMSErrorCodeTranslations] Network error details: ${errorMessage}`);
             } else {
                 this.log.warn(`Translation definitions not updated, error downloading from Bambulab documentation`);
-                this.log.debug(`[loadHMSErrorCodeTranslations] Error details: ${errorMessage} | ${e && e.stack ? e.stack : ''}`);
+                this.log.debug(
+                    `[loadHMSErrorCodeTranslations] Error details: ${errorMessage} | ${e && e.stack ? e.stack : ''}`,
+                );
             }
         }
     }
