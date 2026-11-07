@@ -265,7 +265,14 @@ class BambulabConnect extends utils.Adapter {
                         this.log.debug(`Printer Message ${JSON.stringify(message)}`);
                     }
                     this.messageQueue = this.messageQueue
-                        .then(() => this.messageHandler(message))
+                        .then(() => {
+                            // A message may wait in the queue until its MQTT client has
+                            // already been replaced. Never apply stale telemetry.
+                            if (this.client !== client || this.shuttingDown) {
+                                return;
+                            }
+                            return this.messageHandler(message);
+                        })
                         .catch(error => {
                             this.log.error(`[MQTT Message queue] ${error.message || error}`);
                         });
