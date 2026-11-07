@@ -906,7 +906,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P3 S${state.val * 2.55} \n`,
+                                param: `M106 P3 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -916,7 +916,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'print_speed',
-                                param: `${state.val} \n`,
+                                param: `${speedLevel} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -925,7 +925,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M140 S${state.val} \n`,
+                                param: `M140 S${temperature} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -934,7 +934,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M104 S${state.val} \n`,
+                                param: `M104 S${temperature} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -943,7 +943,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P2 S${state.val * 2.55} \n`,
+                                param: `M106 P2 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -952,7 +952,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P3 S${state.val * 2.55} \n`,
+                                param: `M106 P3 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
@@ -961,7 +961,7 @@ class BambulabConnect extends utils.Adapter {
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P1 S${state.val * 2.55} \n`,
+                                param: `M106 P1 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
