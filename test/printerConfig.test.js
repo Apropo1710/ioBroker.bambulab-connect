@@ -56,6 +56,17 @@ describe('printerConfig', () => {
         expect(getPrinters({ printers: [{ host: '10.0.0.1', serial: 'S1' }] })).to.have.lengthOf(0);
     });
 
+    it('normalizes accented printer names to stable ASCII IDs', () => {
+        const printer = normalizePrinter({
+            name: 'Étage 2 – Drucker',
+            host: '192.168.1.10',
+            Password: 'token',
+            serial: 'SERIAL',
+        });
+
+        expect(printer.id).to.equal('Etage_2_Drucker');
+    });
+
     it('generates unique case-insensitive IDs', () => {
         const printers = ensureUniqueIds([{ id: 'A1' }, { id: 'a1' }, { id: 'A1' }]);
         expect(printers.map(printer => printer.id)).to.deep.equal(['A1', 'a1_2', 'A1_3']);
