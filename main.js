@@ -229,7 +229,9 @@ class Bambulab extends utils.Adapter {
             // Implement message buffer to avoid processing too many messages in a short time
             if (clientConnection.messageBuffer === false) {
                 try {
-                    this.log.debug(`Message buffer inactive, message processing`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Message buffer inactive, message processing`);
+                    }
                     if (this.config.messageBuffer > 0) {
                         clientConnection.messageBuffer = true;
                         timeouts['messageBuffer'] = this.setTimeout(() => {
@@ -241,7 +243,9 @@ class Bambulab extends utils.Adapter {
                     this.log.error(`[MQTT Message handler] ${e}`);
                 }
             } else {
-                this.log.debug(`Message buffer active, skipping message processing`);
+                if (this.log.level === 'debug' || this.log.level === 'silly') {
+                    this.log.debug(`Message buffer active, skipping message processing`);
+                }
                 return; // Ignore Message
             }
 
