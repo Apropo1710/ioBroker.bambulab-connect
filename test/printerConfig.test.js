@@ -23,6 +23,20 @@ describe('printerConfig', () => {
         });
     });
 
+    it('migrates legacy settings if the newly introduced printer table is empty', () => {
+        const printers = getPrinters({
+            printers: [],
+            host: '192.168.1.20',
+            Password: 'legacy-token',
+            serial: 'LEGACY_SERIAL',
+            printerModel: 'P1S',
+        });
+
+        expect(printers).to.have.lengthOf(1);
+        expect(printers[0].Password).to.equal('legacy-token');
+        expect(printers[0].serial).to.equal('LEGACY_SERIAL');
+    });
+
     it('normalizes a list and accepts legacy lowercase password key', () => {
         const printers = getPrinters({
             printers: [
