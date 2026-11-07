@@ -420,6 +420,16 @@ class BambulabConnect extends utils.Adapter {
                 }
             }
 
+                // Estimate filament grams for the external spool (vt_tray) only if MQTT omits remain_g.
+                const vtTray = message.print.vt_tray;
+                if (vtTray && vtTray.remain_g == null) {
+                    const pct = Number(vtTray.remain);
+                    const nominalG = Number(vtTray.tray_weight);
+                    if (Number.isFinite(pct) && pct >= 0 && pct <= 100 && Number.isFinite(nominalG) && nominalG > 0) {
+                        vtTray.remain_g = Math.round((nominalG * pct) / 100);
+                    }
+                }
+
             // Translate home_flag to door state
             if (message.print.home_flag === 14796168) {
                 message.print.doorOpen = true;
@@ -466,6 +476,15 @@ class BambulabConnect extends utils.Adapter {
             if (amsData[unit] !== null) {
                 for (const tray in amsData[unit].tray) {
                     const trayData = amsData[unit].tray[tray];
+                    // Calculate estimated remaining filament grams only when MQTT omits remain_g.
+                    const trayObj = amsData[unit].tray[tray];
+                    if (trayObj.remain_g == null) {
+                        const pct = Number(trayObj.remain);
+                        const nominalG = Number(trayObj.tray_weight);
+                        if (Number.isFinite(pct) && pct >= 0 && pct <= 100 && Number.isFinite(nominalG) && nominalG > 0) {
+                            trayObj.remain_g = Math.round((nominalG * pct) / 100);
+                        }
+                    }
                     // Convert bed_temp only once per tray. Some firmware payloads omit
                     // this field, while populated trays may send it as a string.
                     if (trayData.cols || trayData.bed_temp != null) {
