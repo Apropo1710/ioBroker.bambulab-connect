@@ -708,6 +708,9 @@ class Bambulab extends utils.Adapter {
      */
     onUnload(callback) {
         try {
+            // Stop jsonExplorer expiry timers so they cannot write states after unload.
+            jsonExplorer.clearStateExpireTimers();
+
             // Close running timers
             if (timeouts[this.config.serial]) {
                 this.clearTimeout(timeouts[this.config.serial]);
