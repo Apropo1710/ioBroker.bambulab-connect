@@ -781,14 +781,10 @@ class BambulabConnect extends utils.Adapter {
             return false; // Allow all commands when not actively working
         }
 
-        // Convert to string and check if any blocked command is present
-        const upperParam = String(gcodeParam).toUpperCase().trim();
-        return blockedCommandsDuringPrinting.some(
-            blockedCmd =>
-                upperParam.startsWith(`${blockedCmd} `) ||
-                upperParam === blockedCmd ||
-                upperParam.startsWith(`${blockedCmd}\n`),
-        );
+        // Check every line and recognize compact G-code (e.g. G1X10), too.
+        // Match command numbers as a whole so G10 is not mistaken for G1.
+        const lines = String(gcodeParam).toUpperCase().split(/\r?\n/);
+        return lines.some(line => /^G(?:0|1|28|90|91)(?=$|[A-Z\s;])/.test(line.trim()));
     }
 
     async onStateChange(id, state) {
