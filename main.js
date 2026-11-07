@@ -140,10 +140,14 @@ class Bambulab extends utils.Adapter {
                 // @ts-expect-error if print does not exist function will return false and skip
                 if (message && message.print && message && message.print.result) {
                     // Handle values for printer statistics
-                    this.log.debug(`Printer message result ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Printer message result ${JSON.stringify(message)}`);
+                    }
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.print) {
-                    this.log.debug(`Printer Message ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Printer Message ${JSON.stringify(message)}`);
+                    }
                     this.messageHandler(message);
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.command) {
@@ -151,13 +155,17 @@ class Bambulab extends utils.Adapter {
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.system) {
                     // Handle values for system messages, used to acknowledge messages
-                    this.log.debug(`System Message ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`System Message ${JSON.stringify(message)}`);
+                    }
                 } else if (message && message['t_utc']) {
                     // Handle values for system messages, used to acknowledge messages
                     // this.log.info(`System Message ${JSON.stringify(message)}`);
                     // TimeStamp Message, ignore
                 } else {
-                    this.log.debug(`Unknown Message ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Unknown Message ${JSON.stringify(message)}`);
+                    }
                 }
                 clientConnection.connected = true;
                 clientConnection.connectError = false;
@@ -421,7 +429,9 @@ class Bambulab extends utils.Adapter {
                 false,
                 0,
             );
-            this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
+            if (this.log.level === 'debug' || this.log.level === 'silly') {
+                this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
+            }
         } catch (e) {
             this.log.error(`[messageHandler] ${e} | ${e.stack}`);
         }
@@ -471,7 +481,9 @@ class Bambulab extends utils.Adapter {
     }
 
     publishMQTTmessages(msg) {
-        this.log.debug(`Publish message ${JSON.stringify(msg)}`);
+        if (this.log.level === 'debug' || this.log.level === 'silly') {
+            this.log.debug(`Publish message ${JSON.stringify(msg)}`);
+        }
 
         const topic = `device/${this.config.serial}/request`;
         client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
@@ -716,7 +728,7 @@ class Bambulab extends utils.Adapter {
             }
             if (timeouts['dataPolling']) {
                 this.clearTimeout(timeouts['dataPolling']);
-                timeouts[timeouts['dataPolling']] = null;
+                timeouts['dataPolling'] = null;
             }
 
             if (timeouts['messageBuffer']) {
