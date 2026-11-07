@@ -133,6 +133,20 @@ describe('Local jsonExplorer async traversal', () => {
         expect(writes.filter(entry => entry.kind === 'object')).to.have.lengthOf(firstObjectWrites * 2);
     });
 
+    it('clears online expiry timers during shutdown', async () => {
+        mockAdapter.executioninterval = 0;
+
+        await jsonExplorer.traverseJson({ online: true }, null, false, false, 0, false);
+        jsonExplorer.clearStateExpireTimers();
+
+        // The expiry timer would otherwise write false after five seconds.
+        await new Promise(resolve => setTimeout(resolve, 20));
+
+        const onlineWrites = writes.filter(entry => entry.kind === 'state' && entry.id === 'online');
+        expect(onlineWrites).to.have.lengthOf(1);
+        expect(onlineWrites[0].state.val).to.equal(true);
+    });
+
     it('writes state again when the value changes', async () => {
         await jsonExplorer.traverseJson({ temperature: 220 }, 'printer', false, false, 0, false);
         await jsonExplorer.traverseJson({ temperature: 221 }, 'printer', false, false, 0, false);
