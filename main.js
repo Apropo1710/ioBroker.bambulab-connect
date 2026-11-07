@@ -455,35 +455,11 @@ class Bambulab extends utils.Adapter {
         for (const unit in amsData) {
             if (amsData[unit] !== null) {
                 for (const tray in amsData[unit].tray) {
-                    if (!amsData[unit].tray[tray].cols) {
-                        // amsData[unit].tray[tray] =   {
-                        // 	'bed_temp': '',
-                        // 	'bed_temp_type': '',
-                        // 	'cols': [],
-                        // 	'drying_temp': '',
-                        // 	'drying_time': '',
-                        // 	'id': '',
-                        // 	'nozzle_temp_max': '',
-                        // 	'nozzle_temp_min': '',
-                        // 	'remain': 0,
-                        // 	'tag_uid': '',
-                        // 	'tray_color': '',
-                        // 	'tray_diameter': '',
-                        // 	'tray_id_name': '',
-                        // 	'tray_info_idx': '',
-                        // 	'tray_sub_brands': '',
-                        // 	'tray_type': '',
-                        // 	'tray_uuid': '',
-                        // 	'tray_weight': '',
-                        // 	'xcam_info': ''
-                        // };
-                        // amsData[unit].tray[tray]._filamentPresent = false;
-                    } else {
-                        // amsData[unit].tray[tray]._filamentPresent = true;
-                        amsData[unit].tray[tray].bed_temp = parseInt(amsData[unit].tray[tray].bed_temp);
-                    }
-                    if (amsData[unit].tray[tray].bed_temp != null) {
-                        amsData[unit].tray[tray].bed_temp = parseInt(amsData[unit].tray[tray].bed_temp);
+                    const trayData = amsData[unit].tray[tray];
+                    // Convert bed_temp only once per tray. Some firmware payloads omit
+                    // this field, while populated trays may send it as a string.
+                    if (trayData.cols || trayData.bed_temp != null) {
+                        trayData.bed_temp = parseInt(trayData.bed_temp);
                     }
                 }
             }
