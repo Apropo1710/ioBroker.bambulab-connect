@@ -394,10 +394,16 @@ class BambulabConnect extends utils.Adapter {
                     };
                 }
 
-                await this.setState(`${this.config.serial}.hms.hmsErrorCode`, {
-                    val: JSON.stringify(hmsError),
-                    ack: true,
-                });
+                const hmsErrorCodeJson = JSON.stringify(hmsError);
+                // MQTT print reports often repeat HMS data unchanged; avoid
+                // writing the same translated error list to ioBroker each time.
+                if (this.lastHmsErrorCode !== hmsErrorCodeJson) {
+                    await this.setState(`${this.config.serial}.hms.hmsErrorCode`, {
+                        val: hmsErrorCodeJson,
+                        ack: true,
+                    });
+                    this.lastHmsErrorCode = hmsErrorCodeJson;
+                }
 
                 // For some reason library does not convert the ams related bed_temp to number when value = 0
                 if (
