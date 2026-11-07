@@ -506,9 +506,12 @@ class BambulabConnect extends utils.Adapter {
             timeouts['dataPolling'] = null;
         }
         if (['P1P', 'P1S', 'P1-Series'].includes(this.config.printerModel)) {
+            // P1 printers can lag when pushall is requested too frequently.
+            // Enforce a conservative minimum of five minutes, including legacy configs.
+            const pollingInterval = Math.max(300, Number(this.config.requestInterval) || 300);
             timeouts['dataPolling'] = this.setTimeout(() => {
                 this.requestData();
-            }, this.config.requestInterval * 1000);
+            }, pollingInterval * 1000);
         }
     }
 
