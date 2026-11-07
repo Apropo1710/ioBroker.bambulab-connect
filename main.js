@@ -227,7 +227,9 @@ class BambulabConnect extends utils.Adapter {
 
                 // Subscribe on a printer topic after connection
                 client.subscribe([`device/${this.config.serial}/report`], error => {
-                    if (this.client !== client || this.shuttingDown) return;
+                    if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                     if (error) {
                         this.log.warn(`MQTT subscribe failed: ${error.message || error}`);
                     }
@@ -240,7 +242,9 @@ class BambulabConnect extends utils.Adapter {
 
             // Receive MQTT messages
             client.on('message', (topic, message) => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 // Parse printer payload safely; malformed MQTT packets must not crash the adapter.
                 try {
                     message = JSON.parse(message.toString());
@@ -288,7 +292,9 @@ class BambulabConnect extends utils.Adapter {
             });
 
             client.on('end', () => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 if (this.clientConnection.connected) {
                     this.log.warn(
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
@@ -301,7 +307,9 @@ class BambulabConnect extends utils.Adapter {
             });
 
             client.on('error', error => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 if (!this.clientConnection.connectError) {
                     this.log.error(`Connection issue occurred: ${error} - printer may be powered off or unreachable`);
                 }
