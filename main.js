@@ -11,7 +11,7 @@ const utils = require('@iobroker/adapter-core');
 const mqtt = require('mqtt'); // MQTT request library
 const { default: axios } = require('axios'); // Http request library
 
-const jsonExplorer = require('iobroker-jsonexplorer'); // Use jsonExplorer library
+const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 
