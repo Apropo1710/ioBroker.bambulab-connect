@@ -77,4 +77,17 @@ describe('Local jsonExplorer async traversal', () => {
         ]);
         expect(stateWrites).to.have.lengthOf(3);
     });
+    it('creates structure objects only once across repeated MQTT-style updates', async () => {
+        const payload = { nested: { enabled: true } };
+
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+        const firstObjectWrites = writes.filter(entry => entry.kind === 'object').length;
+
+        await jsonExplorer.traverseJson(payload, 'printer', false, false, 0, false);
+        const secondObjectWrites = writes.filter(entry => entry.kind === 'object').length;
+
+        expect(firstObjectWrites).to.equal(2); // printer and printer.nested
+        expect(secondObjectWrites).to.equal(firstObjectWrites);
+    });
+
 });
