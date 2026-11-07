@@ -427,6 +427,21 @@ class BambulabConnect extends utils.Adapter {
                 message.print.doorOpen = false;
             }
 
+            // Normalize known MQTT type inconsistencies only at their specific paths.
+            // err2.err_code is sometimes sent as a numeric string, while nozzle.tar_id
+            // can arrive as a number. Keep global state definitions unchanged because
+            // these keys are used with different types elsewhere.
+            const errCode = message.print.err2?.err_code;
+            if (typeof errCode === 'string') {
+                const normalizedErrCode = errCode.trim();
+                if (normalizedErrCode !== '' && Number.isFinite(Number(normalizedErrCode))) {
+                    message.print.err2.err_code = Number(normalizedErrCode);
+                }
+            }
+            if (typeof message.print.device?.nozzle?.tar_id === 'number') {
+                message.print.device.nozzle.tar_id = String(message.print.device.nozzle.tar_id);
+            }
+
             // Explore JSON & create states
             const returnJONexplorer = await jsonExplorer.traverseJson(
                 message.print,
