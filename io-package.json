@@ -100,7 +100,8 @@
             "zh-cn": "连接到 Bambulab 3D 打印机以检索当前打印的数据并控制主要方面"
         },
         "authors": [
-            "DutchmanNL <oss@drozmotix.eu>"
+            "Apropo1710 (maintainer)",
+            "DutchmanNL <oss@drozmotix.eu> (original adapter author)"
         ],
         "keywords": [
             "bambulab",
