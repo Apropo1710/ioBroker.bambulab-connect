@@ -127,14 +127,14 @@
         "requestInterval": {
             "type": "number",
             "label": "Seconds between data polling",
-            "help": "Polling interval for P1P/P1S and legacy P1-Series profile.",
+            "help": "Full status refresh (pushall) interval in seconds for P1P/P1S. Recommended default: 300 seconds (5 minutes); shorter intervals may cause printer lag.",
             "xs": 12,
             "sm": 12,
             "md": 6,
             "lg": 4,
             "xl": 4,
-            "default": 5,
-            "min": 1,
+            "default": 300,
+            "min": 60,
             "max": 36000
         },
         "getDataFiles": {
