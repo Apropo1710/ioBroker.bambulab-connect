@@ -720,9 +720,9 @@ class BambulabConnect extends utils.Adapter {
                 this.clearTimeout(timeouts[this.config.serial]);
                 timeouts[this.config.serial] = null;
             }
-            if (timeouts['dataPolling']) {
-                this.clearTimeout(timeouts['dataPolling']);
-                timeouts['dataPolling'] = null;
+            if (timeouts[`${this.config.serial}_dataPolling`]) {
+                this.clearTimeout(timeouts[`${this.config.serial}_dataPolling`]);
+                timeouts[`${this.config.serial}_dataPolling`] = null;
             }
 
             // Close MQTT connection without allowing shutdown events to update states
