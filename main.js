@@ -15,20 +15,12 @@ const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplo
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 
-let client; // Memory to store client connection information
-const clientConnection = {
-    connected: false,
-    connectError: false,
-    initiated: false,
-    reconnectMessageShown: false, // Track if we've shown the reconnection message
-};
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
 let language = 'en'; // System language to handle error code translations, default EN
 
 // Array of G-code commands that should be blocked during printing for safety
 const blockedCommandsDuringPrinting = ['G0', 'G1', 'G28', 'G90', 'G91'];
-let currentPrintingState = null; // Track current printing state for safety checks
 
 class BambulabConnect extends utils.Adapter {
     /**
@@ -40,6 +32,9 @@ class BambulabConnect extends utils.Adapter {
             name: 'bambulab-connect',
         });
         // Serialize MQTT report processing so rapid updates cannot race each other.
+        this.client = null;
+        this.clientConnection = { connected: false, connectError: false, initiated: false, reconnectMessageShown: false };
+        this.currentPrintingState = null;
         this.messageQueue = Promise.resolve();
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -75,18 +70,18 @@ class BambulabConnect extends utils.Adapter {
     mqttMessageHandle() {
         try {
             // Prevent multiple concurrent connection attempts
-            if (clientConnection.initiated) {
+            if (this.clientConnection.initiated) {
                 this.log.debug(`MQTT connection already in progress, skipping`);
                 return;
             }
 
             // Only log connection attempt if we haven't shown the reconnect message yet
-            if (!clientConnection.reconnectMessageShown) {
-                if (clientConnection.connectError) {
+            if (!this.clientConnection.reconnectMessageShown) {
+                if (this.clientConnection.connectError) {
                     this.log.info(
                         `Attempting to reconnect to printer - will retry automatically every 30 seconds until connection is restored`,
                     );
-                    clientConnection.reconnectMessageShown = true;
+                    this.clientConnection.reconnectMessageShown = true;
                 } else {
                     this.log.info(`Try to connect to printer`);
                 }
@@ -94,17 +89,17 @@ class BambulabConnect extends utils.Adapter {
                 this.log.debug(`Retrying connection to printer`);
             }
 
-            clientConnection.initiated = true;
+            this.clientConnection.initiated = true;
 
-            // Properly close existing client if present
-            if (client) {
-                client.removeAllListeners();
-                client.end();
-                client = null;
+            // Properly close existing this.client if present
+            if (this.client) {
+                this.client.removeAllListeners();
+                this.client.end();
+                this.client = null;
             }
 
             // Connect to Printer using MQTT
-            client = mqtt.connect(`mqtts://${this.config.host}:8883`, {
+            this.client = mqtt.connect(`mqtts://${this.config.host}:8883`, {
                 username: 'bblp',
                 password: this.config.Password,
                 reconnectPeriod: 30000,
@@ -112,20 +107,20 @@ class BambulabConnect extends utils.Adapter {
             });
 
             // Establish connection to printer by MQTT
-            client.on('connect', () => {
-                if (!clientConnection.connected) {
+            this.client.on('connect', () => {
+                if (!this.clientConnection.connected) {
                     this.log.info(`Printer connected successfully`);
                 }
                 this.setState('info.connection', true, true);
-                clientConnection.connected = true;
-                clientConnection.connectError = false;
-                clientConnection.initiated = false; // Reset initiated flag on successful connection
-                clientConnection.reconnectMessageShown = false; // Reset for future disconnections
+                this.clientConnection.connected = true;
+                this.clientConnection.connectError = false;
+                this.clientConnection.initiated = false; // Reset initiated flag on successful connection
+                this.clientConnection.reconnectMessageShown = false; // Reset for future disconnections
 
                 this.createControlStates();
 
                 // Subscribe on a printer topic after connection
-                client.subscribe([`device/${this.config.serial}/report`], () => {
+                this.client.subscribe([`device/${this.config.serial}/report`], () => {
                     this.log.debug(`Subscribed to printer data topic by serial | ${this.config.serial}`);
                 });
 
@@ -134,7 +129,7 @@ class BambulabConnect extends utils.Adapter {
             });
 
             // Receive MQTT messages
-            client.on('message', (topic, message) => {
+            this.client.on('message', (topic, message) => {
                 // Parse printer payload safely; malformed MQTT packets must not crash the adapter.
                 try {
                     message = JSON.parse(message.toString());
@@ -177,47 +172,47 @@ class BambulabConnect extends utils.Adapter {
                         this.log.debug(`Unknown Message ${JSON.stringify(message)}`);
                     }
                 }
-                clientConnection.connected = true;
-                clientConnection.connectError = false;
+                this.clientConnection.connected = true;
+                this.clientConnection.connectError = false;
             });
 
-            client.on('end', () => {
-                if (clientConnection.connected) {
+            this.client.on('end', () => {
+                if (this.clientConnection.connected) {
                     this.log.warn(
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
                     );
                 }
                 this.setState('info.connection', false, true);
-                clientConnection.connected = false;
-                clientConnection.connectError = true;
-                clientConnection.initiated = false;
+                this.clientConnection.connected = false;
+                this.clientConnection.connectError = true;
+                this.clientConnection.initiated = false;
             });
 
-            client.on('error', error => {
-                if (!clientConnection.connectError) {
+            this.client.on('error', error => {
+                if (!this.clientConnection.connectError) {
                     this.log.error(`Connection issue occurred: ${error} - printer may be powered off or unreachable`);
                 }
                 // Close MQTT connection
-                client.end();
-                if (clientConnection.connected) {
+                this.client.end();
+                if (this.clientConnection.connected) {
                     this.log.warn(
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
                     );
                 }
                 this.setState('info.connection', false, true);
 
-                // Try to reconnect by creating a new client instead of using reconnect()
+                // Try to reconnect by creating a new this.client instead of using reconnect()
                 if (timeouts[this.config.serial]) {
                     this.clearTimeout(timeouts[this.config.serial]);
                     timeouts[this.config.serial] = null;
                 }
                 timeouts[this.config.serial] = this.setTimeout(() => {
-                    // Create a new MQTT connection instead of reconnecting the ended client
+                    // Create a new MQTT connection instead of reconnecting the ended this.client
                     this.mqttMessageHandle();
                 }, 30000);
-                clientConnection.connected = false;
-                clientConnection.connectError = true;
-                clientConnection.initiated = false;
+                this.clientConnection.connected = false;
+                this.clientConnection.connectError = true;
+                this.clientConnection.initiated = false;
             });
         } catch (e) {
             this.log.error(`[MQTT Message handler] ${e} | ${e.stack}`);
@@ -294,7 +289,7 @@ class BambulabConnect extends utils.Adapter {
                 // Keep the last known printing state when a delta report omits stg_cur.
                 // This state is also used to block potentially dangerous G-code commands.
                 if (originalStgCur != null) {
-                    currentPrintingState = originalStgCur;
+                    this.currentPrintingState = originalStgCur;
                     message.print.stg_cur = convert.stageParser(originalStgCur);
                     message.print.control.stg_cur = message.print.stg_cur;
                 }
@@ -437,7 +432,7 @@ class BambulabConnect extends utils.Adapter {
         } catch (e) {
             this.log.error(`[messageHandler] ${e} | ${e.stack}`);
         }
-        clientConnection.initiated = true;
+        this.clientConnection.initiated = true;
     }
 
     handleAMSUnits(message) {
@@ -464,14 +459,14 @@ class BambulabConnect extends utils.Adapter {
         }
 
         // State changes can trigger commands while the printer is disconnected.
-        // Avoid dereferencing a missing or disconnected MQTT client.
-        if (!client || !client.connected) {
+        // Avoid dereferencing a missing or disconnected MQTT this.client.
+        if (!this.client || !this.client.connected) {
             this.log.debug('Skipping MQTT publish because the printer is not connected');
             return;
         }
 
         const topic = `device/${this.config.serial}/request`;
-        client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
+        this.client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
             if (error) {
                 this.log.warn(`MQTT publish failed: ${error.message || error}`);
             }
@@ -492,15 +487,15 @@ class BambulabConnect extends utils.Adapter {
         this.publishMQTTmessages(msg);
 
         // Keep a polling timer only for P1-Series printers.
-        if (timeouts['dataPolling']) {
-            this.clearTimeout(timeouts['dataPolling']);
-            timeouts['dataPolling'] = null;
+        if (timeouts[`${this.config.serial}_dataPolling`]) {
+            this.clearTimeout(timeouts[`${this.config.serial}_dataPolling`]);
+            timeouts[`${this.config.serial}_dataPolling`] = null;
         }
         if (['P1P', 'P1S', 'P1-Series'].includes(this.config.printerModel)) {
             // P1 printers can lag when pushall is requested too frequently.
             // Enforce a conservative minimum of five minutes, including legacy configs.
             const pollingInterval = Math.max(300, Number(this.config.requestInterval) || 300);
-            timeouts['dataPolling'] = this.setTimeout(() => {
+            timeouts[`${this.config.serial}_dataPolling`] = this.setTimeout(() => {
                 this.requestData();
             }, pollingInterval * 1000);
         }
@@ -732,16 +727,16 @@ class BambulabConnect extends utils.Adapter {
 
             // Close MQTT connection without allowing shutdown events to update states
             // or schedule a reconnect while the adapter is unloading.
-            if (client) {
-                client.removeAllListeners();
-                client.end();
-                client = null;
+            if (this.client) {
+                this.client.removeAllListeners();
+                this.client.end();
+                this.client = null;
             }
 
-            clientConnection.connected = false;
-            clientConnection.connectError = false;
-            clientConnection.initiated = false;
-            currentPrintingState = null;
+            this.clientConnection.connected = false;
+            this.clientConnection.connectError = false;
+            this.clientConnection.initiated = false;
+            this.currentPrintingState = null;
 
             callback();
         } catch (e) {
@@ -767,7 +762,7 @@ class BambulabConnect extends utils.Adapter {
         //   -2 = Offline (safe)
         //   -1 = Idle (safe)
         //    0+ = Active working states (potentially dangerous)
-        return currentPrintingState != null && currentPrintingState >= 0;
+        return this.currentPrintingState != null && this.currentPrintingState >= 0;
     }
 
     /**
@@ -809,7 +804,7 @@ class BambulabConnect extends utils.Adapter {
                         // Check if this G-code command should be blocked during printing
                         if (this.shouldBlockGcodeCommand(state.val)) {
                             this.log.warn(
-                                `Blocked dangerous G-code command "${state.val}" during active printing/working state (stg_cur: ${currentPrintingState}). Command ignored for safety.`,
+                                `Blocked dangerous G-code command "${state.val}" during active printing/working state (stg_cur: ${this.currentPrintingState}). Command ignored for safety.`,
                             );
                             return; // Exit without sending the command
                         }
@@ -966,7 +961,7 @@ class BambulabConnect extends utils.Adapter {
                         // Block homing (G28) command during active printing/working state
                         if (this.isPrintingOrActiveState()) {
                             this.log.warn(
-                                `Blocked homing command (G28) during active printing/working state (stg_cur: ${currentPrintingState}). Command ignored for safety.`,
+                                `Blocked homing command (G28) during active printing/working state (stg_cur: ${this.currentPrintingState}). Command ignored for safety.`,
                             );
                             return; // Exit without sending the command
                         }
