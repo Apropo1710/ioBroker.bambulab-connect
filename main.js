@@ -14,7 +14,7 @@ const { default: axios } = require('axios'); // Http request library
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
-const { getPrinters, ensureUniqueIds, ensureUniqueSerials } = require('./lib/printerConfig');
+const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
 const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext } = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
@@ -73,6 +73,46 @@ class BambulabConnect extends utils.Adapter {
                 'No valid printer configured. Please add at least one printer with IP, serial and access token.',
             );
             return;
+        }
+
+        // Remove object trees for printers deleted from the configuration.
+        // Do this only after at least one valid printer was found to avoid
+        // destructive cleanup on an incomplete/empty configuration.
+        try {
+            const deviceView = await this.getObjectViewAsync('system', 'device', {
+                startkey: `${this.namespace}.`,
+                endkey: `${this.namespace}.\\u9999`,
+            });
+            const existingDeviceIds = (deviceView?.rows || []).map(row => row.id);
+            const stalePrinterIds = getStalePrinterRootIds(
+                existingDeviceIds,
+                this.namespace,
+                printers.map(printer => printer.id),
+            );
+
+            for (const stalePrinterId of stalePrinterIds) {
+                this.log.info(`Removing stale printer objects for "${stalePrinterId}"`);
+                await this.delObjectAsync(stalePrinterId, { recursive: true });
+
+                const cachePrefix = `${stalePrinterId}.`;
+                for (const objectId of this.createdStructureObjects) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        this.createdStructureObjects.delete(objectId);
+                    }
+                }
+                for (const objectId of this.lastStateValues.keys()) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        this.lastStateValues.delete(objectId);
+                    }
+                }
+                for (const objectId of Object.keys(this.createdStatesDetails)) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        delete this.createdStatesDetails[objectId];
+                    }
+                }
+            }
+        } catch (e) {
+            this.log.warn(`Could not clean up removed printer objects: ${e}`);
         }
 
         for (const printer of printers) {

@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { getPrinters, normalizePrinter, ensureUniqueIds, ensureUniqueSerials } = require('../lib/printerConfig');
+const { getPrinters, normalizePrinter, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('../lib/printerConfig');
 
 describe('printerConfig', () => {
     it('migrates legacy single-printer configuration without losing connection settings', () => {
@@ -85,6 +85,22 @@ describe('printerConfig', () => {
     it('generates unique case-insensitive IDs', () => {
         const printers = ensureUniqueIds([{ id: 'A1' }, { id: 'a1' }, { id: 'A1' }]);
         expect(printers.map(printer => printer.id)).to.deep.equal(['A1', 'a1_2', 'A1_3']);
+    });
+
+    it('identifies stale printer roots but ignores nested and active objects', () => {
+        const stale = getStalePrinterRootIds(
+            [
+                'bambulab-connect.0.A1_Mini',
+                'bambulab-connect.0.X1C',
+                'bambulab-connect.0.X1C.control',
+                'bambulab-connect.0.info',
+                'other.0.H2C',
+            ],
+            'bambulab-connect.0',
+            ['A1_Mini', 'H2C'],
+        );
+
+        expect(stale).to.deep.equal(['X1C']);
     });
 
     it('uses a stable fallback ID for empty names', () => {
