@@ -7,6 +7,7 @@ on:
     branches:
       - "main"
       - "dev/bambulab-connect-cpu"
+      - "feature/multi-printer"
     tags:
       # normal versions
       - "v[0-9]+.[0-9]+.[0-9]+"
