@@ -792,6 +792,32 @@ class BambulabConnect extends utils.Adapter {
         return lines.some(line => blockedCommandPattern.test(line.trim()));
     }
 
+    /**
+     * Validate numeric printer control values before sending MQTT commands.
+     *
+     * @param {number|string} value - Requested control value
+     * @param {string} control - Control name for logging
+     * @param {number} min - Minimum accepted value
+     * @param {number} max - Maximum accepted value
+     * @param {boolean} [integer=false] - Whether the value must be an integer
+     * @returns {number|null} Validated numeric value or null
+     */
+    validateNumericControl(value, control, min, max, integer = false) {
+        const numericValue = typeof value === 'number' ? value : Number(value);
+        if (
+            !Number.isFinite(numericValue) ||
+            numericValue < min ||
+            numericValue > max ||
+            (integer && !Number.isInteger(numericValue))
+        ) {
+            this.log.warn(
+                `Rejected invalid ${control} value "${value}". Expected ${integer ? 'an integer' : 'a number'} between ${min} and ${max}.`,
+            );
+            return null;
+        }
+        return numericValue;
+    }
+
     async onStateChange(id, state) {
         if (state && state.val != null) {
             // Only act on trigger if value is not Acknowledged
@@ -902,7 +928,9 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'fanSpeedChamber':
+                    case 'fanSpeedChamber': {
+                        const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
+                        if (fanValue === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -910,9 +938,11 @@ class BambulabConnect extends utils.Adapter {
                                 sequence_id: '0',
                             },
                         };
-
                         break;
-                    case 'spd_lvl':
+                    }
+                    case 'spd_lvl': {
+                        const speedLevel = this.validateNumericControl(state.val, 'print speed', 1, 4, true);
+                        if (speedLevel === null) return;
                         msg = {
                             print: {
                                 command: 'print_speed',
@@ -921,7 +951,10 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'bed_target_temper':
+                    }
+                    case 'bed_target_temper': {
+                        const temperature = this.validateNumericControl(state.val, 'bed temperature', 0, 120);
+                        if (temperature === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -930,7 +963,10 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'nozzle_target_temper':
+                    }
+                    case 'nozzle_target_temper': {
+                        const temperature = this.validateNumericControl(state.val, 'nozzle temperature', 0, 350);
+                        if (temperature === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -939,7 +975,10 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'big_fan1_speed':
+                    }
+                    case 'big_fan1_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'auxiliary fan', 0, 100);
+                        if (fanValue === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -948,7 +987,10 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'big_fan2_speed':
+                    }
+                    case 'big_fan2_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
+                        if (fanValue === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -957,7 +999,10 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'cooling_fan_speed':
+                    }
+                    case 'cooling_fan_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'cooling fan', 0, 100);
+                        if (fanValue === null) return;
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -966,6 +1011,7 @@ class BambulabConnect extends utils.Adapter {
                             },
                         };
                         break;
+                    }
                     case 'homing':
                         // Block homing (G28) command during active printing/working state
                         if (this.isPrintingOrActiveState()) {
