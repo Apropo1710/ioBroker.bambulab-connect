@@ -64,7 +64,9 @@ class BambulabConnect extends utils.Adapter {
 
         const printers = ensureUniqueIds(getPrinters(this.config));
         if (!printers.length) {
-            this.log.error('No valid printer configured. Please add at least one printer with IP, serial and access token.');
+            this.log.error(
+                'No valid printer configured. Please add at least one printer with IP, serial and access token.',
+            );
             return;
         }
 
@@ -499,13 +501,7 @@ class BambulabConnect extends utils.Adapter {
             }
 
             // Explore JSON & create states
-            const returnJONexplorer = await jsonExplorer.traverseJson(
-                message.print,
-                this.printerId,
-                false,
-                false,
-                0,
-            );
+            const returnJONexplorer = await jsonExplorer.traverseJson(message.print, this.printerId, false, false, 0);
             if (this.log.level === 'debug' || this.log.level === 'silly') {
                 this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
             }
