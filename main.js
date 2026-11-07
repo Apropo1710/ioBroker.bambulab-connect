@@ -134,8 +134,13 @@ class Bambulab extends utils.Adapter {
 
             // Receive MQTT messages
             client.on('message', (topic, message) => {
-                // Parse string to an JSON object
-                message = JSON.parse(message.toString());
+                // Parse printer payload safely; malformed MQTT packets must not crash the adapter.
+                try {
+                    message = JSON.parse(message.toString());
+                } catch (error) {
+                    this.log.warn(`Ignoring invalid MQTT JSON message on topic ${topic}: ${error.message}`);
+                    return;
+                }
 
                 // @ts-expect-error if print does not exist function will return false and skip
                 if (message && message.print && message && message.print.result) {
