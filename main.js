@@ -39,6 +39,8 @@ class BambulabConnect extends utils.Adapter {
             ...options,
             name: 'bambulab-connect',
         });
+        // Serialize MQTT report processing so rapid updates cannot race each other.
+        this.messageQueue = Promise.resolve();
         this.on('ready', this.onReady.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
@@ -152,7 +154,11 @@ class BambulabConnect extends utils.Adapter {
                     if (this.log.level === 'debug' || this.log.level === 'silly') {
                         this.log.debug(`Printer Message ${JSON.stringify(message)}`);
                     }
-                    this.messageHandler(message);
+                    this.messageQueue = this.messageQueue
+                        .then(() => this.messageHandler(message))
+                        .catch(error => {
+                            this.log.error(`[MQTT Message queue] ${error.message || error}`);
+                        });
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.command) {
                     this.log.info(`Response to control command ${JSON.stringify(message)}`);
