@@ -364,8 +364,11 @@ class BambulabConnect extends utils.Adapter {
                 // Translate HMS Code & write to state
                 const hmsError = [];
                 if (message.print.hms != null) {
-                    message.print.hms.hmsErrors = true;
                     for (const hms_code in message.print.hms) {
+                        // hmsErrors is an adapter-generated marker, not an HMS code entry.
+                        if (hms_code === 'hmsErrors') {
+                            continue;
+                        }
                         const attr = convert.DecimalHexTwosComplement(message.print.hms[hms_code].attr);
                         const code = convert.DecimalHexTwosComplement(message.print.hms[hms_code].code);
 
@@ -387,6 +390,7 @@ class BambulabConnect extends utils.Adapter {
                         }
                         hmsError.push(errorMessageArray);
                     }
+                    message.print.hms.hmsErrors = true;
                 } else {
                     message.print.hms = {
                         hmsErrorCount: 0,
