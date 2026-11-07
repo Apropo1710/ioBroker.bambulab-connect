@@ -125,6 +125,7 @@ Older changes can be found at [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 MIT License
 
 Copyright (c) 2025-2026 DutchmanNL <oss@drozmotix.eu>
+Copyright (c) 2026 Apropo1710 (Bambulab Connect modifications)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
