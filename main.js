@@ -505,7 +505,7 @@ class BambulabConnect extends utils.Adapter {
             this.clearTimeout(timeouts['dataPolling']);
             timeouts['dataPolling'] = null;
         }
-        if (this.config.printerModel === 'P1-Series') {
+        if (['P1P', 'P1S', 'P1-Series'].includes(this.config.printerModel)) {
             timeouts['dataPolling'] = this.setTimeout(() => {
                 this.requestData();
             }, this.config.requestInterval * 1000);
