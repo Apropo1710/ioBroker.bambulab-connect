@@ -329,8 +329,8 @@ class BambulabConnect extends utils.Adapter {
                     timeouts[this.printerId] = null;
                 }
                 timeouts[this.printerId] = this.setTimeout(() => {
-                    // Create a new MQTT connection instead of reconnecting the ended this.client
-                    if (!this.shuttingDown) {
+                    // Ignore a retry timer if another MQTT client has already replaced this one.
+                    if (!this.shuttingDown && this.client === client) {
                         this.mqttMessageHandle();
                     }
                 }, 30000);
