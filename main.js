@@ -15,7 +15,7 @@ const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplo
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials } = require('./lib/printerConfig');
-const { createPrinterContext, getPrinterIdFromStateId } = require('./lib/printerRuntime');
+const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext } = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
@@ -811,23 +811,11 @@ class BambulabConnect extends utils.Adapter {
             jsonExplorer.clearStateExpireTimers();
 
             for (const context of this.printers.values()) {
-                for (const timerKey of [context.printerId, `${context.printerId}_dataPolling`]) {
-                    if (timeouts[timerKey]) {
-                        this.clearTimeout(timeouts[timerKey]);
-                        timeouts[timerKey] = null;
-                    }
+                try {
+                    shutdownPrinterContext(context, timeouts, timer => this.clearTimeout(timer));
+                } catch (e) {
+                    this.log.error(`[onUnload] Failed to stop printer "${context.printerId}": ${e}`);
                 }
-
-                if (context.client) {
-                    context.client.removeAllListeners();
-                    context.client.end();
-                    context.client = null;
-                }
-
-                context.clientConnection.connected = false;
-                context.clientConnection.connectError = false;
-                context.clientConnection.initiated = false;
-                context.currentPrintingState = null;
             }
 
             this.printers.clear();
