@@ -493,17 +493,16 @@ class Bambulab extends utils.Adapter {
         // Try to request data
         this.publishMQTTmessages(msg);
 
-        // Handle an interval only if not X1-Series
+        // Keep a polling timer only for P1-Series printers.
         if (timeouts['dataPolling']) {
             this.clearTimeout(timeouts['dataPolling']);
             timeouts['dataPolling'] = null;
         }
-        timeouts['dataPolling'] = this.setTimeout(() => {
-            // Request data for P1p printer series
-            if (this.config.printerModel === 'P1-Series') {
+        if (this.config.printerModel === 'P1-Series') {
+            timeouts['dataPolling'] = this.setTimeout(() => {
                 this.requestData();
-            }
-        }, this.config.requestInterval * 1000);
+            }, this.config.requestInterval * 1000);
+        }
     }
 
     createControlStates() {
