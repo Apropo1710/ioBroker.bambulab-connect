@@ -126,6 +126,11 @@ class BambulabConnect extends utils.Adapter {
      */
     mqttMessageHandle() {
         try {
+            if (this.shuttingDown) {
+                this.log.debug(`Skipping MQTT startup for printer "${this.printerId}" during shutdown`);
+                return;
+            }
+
             // Prevent multiple concurrent connection attempts
             if (this.clientConnection.initiated) {
                 this.log.debug(`MQTT connection already in progress, skipping`);
@@ -266,7 +271,9 @@ class BambulabConnect extends utils.Adapter {
                 }
                 timeouts[this.printerId] = this.setTimeout(() => {
                     // Create a new MQTT connection instead of reconnecting the ended this.client
-                    this.mqttMessageHandle();
+                    if (!this.shuttingDown) {
+                        this.mqttMessageHandle();
+                    }
                 }, 30000);
                 this.clientConnection.connected = false;
                 this.clientConnection.connectError = true;
