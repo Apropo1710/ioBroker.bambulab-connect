@@ -253,10 +253,10 @@ class BambulabConnect extends utils.Adapter {
 
                 // Try to reconnect by creating a new this.client instead of using reconnect()
                 if (timeouts[this.printerId]) {
-                    this.clearTimeout(timeouts[this.config.serial]);
-                    timeouts[this.config.serial] = null;
+                    this.clearTimeout(timeouts[this.printerId]);
+                    timeouts[this.printerId] = null;
                 }
-                timeouts[this.config.serial] = this.setTimeout(() => {
+                timeouts[this.printerId] = this.setTimeout(() => {
                     // Create a new MQTT connection instead of reconnecting the ended this.client
                     this.mqttMessageHandle();
                 }, 30000);
@@ -582,14 +582,14 @@ class BambulabConnect extends utils.Adapter {
 
         // Keep a polling timer only for P1-Series printers.
         if (timeouts[`${this.printerId}_dataPolling`]) {
-            this.clearTimeout(timeouts[`${this.config.serial}_dataPolling`]);
-            timeouts[`${this.config.serial}_dataPolling`] = null;
+            this.clearTimeout(timeouts[`${this.printerId}_dataPolling`]);
+            timeouts[`${this.printerId}_dataPolling`] = null;
         }
         if (['P1P', 'P1S', 'P1-Series'].includes(this.config.printerModel)) {
             // P1 printers can lag when pushall is requested too frequently.
             // Enforce a conservative minimum of five minutes, including legacy configs.
             const pollingInterval = Math.max(300, Number(this.config.requestInterval) || 300);
-            timeouts[`${this.config.serial}_dataPolling`] = this.setTimeout(() => {
+            timeouts[`${this.printerId}_dataPolling`] = this.setTimeout(() => {
                 this.requestData();
             }, pollingInterval * 1000);
         }
@@ -690,7 +690,7 @@ class BambulabConnect extends utils.Adapter {
                 common: controlStates[state],
             });
 
-            this.subscribeStates(`${this.config.serial}.control.${state}`);
+            this.subscribeStates(`${this.printerId}.control.${state}`);
         }
 
         for (const state in hmstates) {
