@@ -1,0 +1,39 @@
+name: Auto-fix lint
+
+on:
+  push:
+    branches:
+      - dev/bambulab-connect-cpu
+    paths:
+      - .github/workflows/auto-fix-lint.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  auto-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: dev/bambulab-connect-cpu
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Apply ESLint fixes
+        run: npx eslint -c eslint.config.mjs main.js --fix
+      - name: Apply Prettier formatting
+        run: npx prettier --write main.js
+      - name: Commit fixes
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add main.js
+          git commit -m "style: auto-fix lint and formatting in main.js"
+          git push
