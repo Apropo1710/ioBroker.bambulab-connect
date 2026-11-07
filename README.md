@@ -2,7 +2,7 @@
 
 # Bambulab Connect
 
-[![Test and Release](https://github.com/Apropo1710/ioBroker.bambulab/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/Apropo1710/ioBroker.bambulab/actions/workflows/test-and-release.yml)
+[![Test and Release](https://github.com/Apropo1710/ioBroker.bambulab-connect/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/Apropo1710/ioBroker.bambulab-connect/actions/workflows/test-and-release.yml)
 
 ## Bambulab Connect – 3D-Printing adapter for ioBroker
 
