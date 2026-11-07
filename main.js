@@ -211,7 +211,9 @@ class BambulabConnect extends utils.Adapter {
 
             // Establish connection to printer by MQTT
             client.on('connect', () => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 if (!this.clientConnection.connected) {
                     this.log.info(`Printer connected successfully`);
                 }
@@ -226,7 +228,9 @@ class BambulabConnect extends utils.Adapter {
                 // Subscribe on a printer topic after connection
                 client.subscribe([`device/${this.config.serial}/report`], error => {
                     if (this.client !== client || this.shuttingDown) return;
-                    if (error) this.log.warn(`MQTT subscribe failed: ${error.message || error}`);
+                    if (error) {
+                        this.log.warn(`MQTT subscribe failed: ${error.message || error}`);
+                    }
                     this.log.debug(`Subscribed to printer data topic by serial | ${this.config.serial}`);
                 });
 
@@ -646,7 +650,9 @@ class BambulabConnect extends utils.Adapter {
             // Enforce a conservative minimum of five minutes, including legacy configs.
             const pollingInterval = Math.max(300, Number(this.config.requestInterval) || 300);
             timeouts[`${this.printerId}_dataPolling`] = this.setTimeout(() => {
-                if (!this.shuttingDown) this.requestData();
+                if (!this.shuttingDown) {
+                    this.requestData();
+                }
             }, pollingInterval * 1000);
         }
     }
