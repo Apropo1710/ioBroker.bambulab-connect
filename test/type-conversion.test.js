@@ -16,7 +16,7 @@ describe('Type Conversion Tests', () => {
                 warn: () => {},
                 error: () => {},
             },
-            FORBIDDEN_CHARS: /[\\]\\[*,;'"`<>\\\\?]/g,
+            FORBIDDEN_CHARS: /[\]\[*,;'"`<>\\?]/g,
             setObjectAsync: async () => {},
             extendObjectAsync: async () => {},
             getObjectAsync: async () => null,
