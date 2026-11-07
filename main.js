@@ -930,7 +930,9 @@ class BambulabConnect extends utils.Adapter {
                         break;
                     case 'fanSpeedChamber': {
                         const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
-                        if (fanValue === null) { return; }
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -942,7 +944,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'spd_lvl': {
                         const speedLevel = this.validateNumericControl(state.val, 'print speed', 1, 4, true);
-                        if (speedLevel === null) { return; }
+                        if (speedLevel === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'print_speed',
@@ -954,7 +958,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'bed_target_temper': {
                         const temperature = this.validateNumericControl(state.val, 'bed temperature', 0, 120);
-                        if (temperature === null) { return; }
+                        if (temperature === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -966,7 +972,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'nozzle_target_temper': {
                         const temperature = this.validateNumericControl(state.val, 'nozzle temperature', 0, 350);
-                        if (temperature === null) { return; }
+                        if (temperature === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -978,7 +986,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'big_fan1_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'auxiliary fan', 0, 100);
-                        if (fanValue === null) { return; }
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -990,7 +1000,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'big_fan2_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
-                        if (fanValue === null) { return; }
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -1002,7 +1014,9 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'cooling_fan_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'cooling fan', 0, 100);
-                        if (fanValue === null) { return; }
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
