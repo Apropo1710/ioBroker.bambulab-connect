@@ -246,38 +246,40 @@ class Bambulab extends utils.Adapter {
             }
 
             if (message.print) {
-                try {
-                    this.log.debug(`Extruder R temp: ${message.print.device.extruder.info[0].temp}`);
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                if (this.log.level === 'debug' || this.log.level === 'silly') {
+                    try {
+                        this.log.debug(`Extruder R temp: ${message.print.device.extruder.info[0].temp}`);
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(
-                        `Extruder R temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[0].temp)}`,
-                    );
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(
+                            `Extruder R temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[0].temp)}`,
+                        );
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(`Extruder L temp: ${message.print.device.extruder.info[1].temp}`);
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(`Extruder L temp: ${message.print.device.extruder.info[1].temp}`);
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(
-                        `Extruder L temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[1].temp)}`,
-                    );
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(
+                            `Extruder L temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[1].temp)}`,
+                        );
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(`Nozzel temp: ${decodeExtruderTemp(message.print.nozzle_temper)}`);
-                } catch {
-                    // Ignore if nozzle_temper is not available
+                    try {
+                        this.log.debug(`Nozzel temp: ${decodeExtruderTemp(message.print.nozzle_temper)}`);
+                    } catch {
+                        // Ignore if nozzle_temper is not available
+                    }
                 }
 
                 function decodeExtruderTemp(raw) {
