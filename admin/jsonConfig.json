@@ -149,18 +149,6 @@
             "lg": 4,
             "xl": 4
         },
-        "messageBuffer": {
-            "type": "number",
-            "label": "Message buffer",
-            "help": "Only process data every X seconds, reduces CPU load. 0 = every second",
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4,
-            "default": 5,
-            "min": 1,
-            "max": 36000
-        }
+
     }
 }
