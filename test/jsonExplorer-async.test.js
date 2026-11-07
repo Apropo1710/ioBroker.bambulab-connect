@@ -103,6 +103,22 @@ describe('Local jsonExplorer async traversal', () => {
         expect(secondStateWrites).to.equal(firstStateWrites);
     });
 
+    it('invalidates cached objects and values after recursive deletion', async () => {
+        await jsonExplorer.traverseJson({ nested: { temperature: 220 } }, 'printer', false, false, 0, false);
+
+        mockAdapter.supportsFeature = feature => feature === 'ADAPTER_DEL_OBJECT_RECURSIVE';
+        mockAdapter.delObjectAsync = async () => {};
+
+        await jsonExplorer.deleteEverything('printer');
+        const before = writes.length;
+
+        await jsonExplorer.traverseJson({ nested: { temperature: 220 } }, 'printer', false, false, 0, false);
+
+        expect(writes.filter(entry => entry.kind === 'object').length).to.equal(4);
+        expect(writes.filter(entry => entry.kind === 'state').length).to.equal(2);
+        expect(writes.length).to.be.greaterThan(before);
+    });
+
     it('resets runtime deduplication caches on init', async () => {
         const payload = { temperature: 220, nested: { enabled: true } };
 
