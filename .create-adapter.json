@@ -19,7 +19,7 @@
   "dataSource": "push",
   "connectionIndicator": "yes",
   "language": "JavaScript",
-  "nodeVersion": "14",
+  "nodeVersion": "22",
   "adminUi": "json",
   "tools": [
     "ESLint",
