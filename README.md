@@ -6,6 +6,10 @@
 
 ## Bambulab Connect – 3D-Printing adapter for ioBroker
 
+## Project origin and license
+
+Bambulab Connect is a community-maintained derivative of the original [ioBroker.bambulab adapter by DrozmotiX](https://github.com/DrozmotiX/ioBroker.bambulab). The original project and its contributors are acknowledged; the MIT license and original copyright notice are retained in [`LICENSE`](LICENSE).
+
 ## Getting started
 
 With credits to [kmxak](https://forum.iobroker.net/user/kmxak), [djalexz](https://forum.iobroker.net/user/djalexz), all other involved and inspired by [this forum thread](https://forum.iobroker.net/topic/61585/bambu-lab-3d-drucker-mqtt-integration)
