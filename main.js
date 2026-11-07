@@ -799,7 +799,7 @@ class BambulabConnect extends utils.Adapter {
      * @param {string} control - Control name for logging
      * @param {number} min - Minimum accepted value
      * @param {number} max - Maximum accepted value
-     * @param {boolean} [integer=false] - Whether the value must be an integer
+     * @param {boolean} integer - Whether the value must be an integer (defaults to false)
      * @returns {number|null} Validated numeric value or null
      */
     validateNumericControl(value, control, min, max, integer = false) {
@@ -930,7 +930,7 @@ class BambulabConnect extends utils.Adapter {
                         break;
                     case 'fanSpeedChamber': {
                         const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
-                        if (fanValue === null) return;
+                        if (fanValue === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -942,7 +942,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'spd_lvl': {
                         const speedLevel = this.validateNumericControl(state.val, 'print speed', 1, 4, true);
-                        if (speedLevel === null) return;
+                        if (speedLevel === null) { return; }
                         msg = {
                             print: {
                                 command: 'print_speed',
@@ -954,7 +954,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'bed_target_temper': {
                         const temperature = this.validateNumericControl(state.val, 'bed temperature', 0, 120);
-                        if (temperature === null) return;
+                        if (temperature === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -966,7 +966,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'nozzle_target_temper': {
                         const temperature = this.validateNumericControl(state.val, 'nozzle temperature', 0, 350);
-                        if (temperature === null) return;
+                        if (temperature === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -978,7 +978,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'big_fan1_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'auxiliary fan', 0, 100);
-                        if (fanValue === null) return;
+                        if (fanValue === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -990,7 +990,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'big_fan2_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
-                        if (fanValue === null) return;
+                        if (fanValue === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
@@ -1002,7 +1002,7 @@ class BambulabConnect extends utils.Adapter {
                     }
                     case 'cooling_fan_speed': {
                         const fanValue = this.validateNumericControl(state.val, 'cooling fan', 0, 100);
-                        if (fanValue === null) return;
+                        if (fanValue === null) { return; }
                         msg = {
                             print: {
                                 command: 'gcode_line',
