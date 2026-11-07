@@ -33,7 +33,12 @@ class BambulabConnect extends utils.Adapter {
         });
         // Serialize MQTT report processing so rapid updates cannot race each other.
         this.client = null;
-        this.clientConnection = { connected: false, connectError: false, initiated: false, reconnectMessageShown: false };
+        this.clientConnection = {
+            connected: false,
+            connectError: false,
+            initiated: false,
+            reconnectMessageShown: false,
+        };
         this.currentPrintingState = null;
         this.messageQueue = Promise.resolve();
         this.on('ready', this.onReady.bind(this));
