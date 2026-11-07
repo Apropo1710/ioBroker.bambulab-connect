@@ -23,9 +23,9 @@ jobs:
           node-version: 22
       - run: npm ci
       - name: Apply ESLint fixes
-        run: npx eslint -c eslint.config.mjs main.js --fix
+        run: npx eslint -c eslint.config.mjs main.js lib/jsonExplorer.js --fix
       - name: Apply Prettier formatting
-        run: npx prettier --write main.js
+        run: npx prettier --write main.js lib/jsonExplorer.js
       - name: Commit fixes
         run: |
           if git diff --quiet; then
@@ -34,6 +34,6 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add main.js
-          git commit -m "style: auto-fix lint and formatting in main.js"
+          git add main.js lib/jsonExplorer.js
+          git commit -m "style: auto-fix lint and formatting"
           git push
