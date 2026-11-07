@@ -723,10 +723,19 @@ class Bambulab extends utils.Adapter {
                 timeouts['messageBuffer'] = null;
             }
 
-            // Close MQTT connection if present
+            // Close MQTT connection without allowing shutdown events to update states
+            // or schedule a reconnect while the adapter is unloading.
             if (client) {
+                client.removeAllListeners();
                 client.end();
+                client = null;
             }
+
+            clientConnection.connected = false;
+            clientConnection.connectError = false;
+            clientConnection.initiated = false;
+            clientConnection.messageBuffer = false;
+            currentPrintingState = null;
 
             callback();
         } catch (e) {
