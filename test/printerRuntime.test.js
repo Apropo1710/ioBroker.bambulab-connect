@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { createPrinterContext, getPrinterIdFromStateId } = require('../lib/printerRuntime');
+const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext } = require('../lib/printerRuntime');
 
 describe('printerRuntime', () => {
     it('creates independent runtime fields for each printer', () => {
@@ -42,6 +42,44 @@ describe('printerRuntime', () => {
         first.currentPrintingState = 1;
         expect(second.clientConnection.connected).to.equal(false);
         expect(second.currentPrintingState).to.equal(null);
+    });
+
+    it('clears per-printer timers and closes MQTT on shutdown', () => {
+        const adapter = { config: {}, log: {} };
+        const context = createPrinterContext(adapter, {
+            id: 'A1_Mini',
+            host: '192.168.1.10',
+            Password: 'token',
+            serial: 'SERIAL_A',
+        });
+        const cleared = [];
+        const timers = { A1_Mini: 'mqtt-retry', A1_Mini_dataPolling: 'polling' };
+        let endedWithForce = false;
+        context.client = {
+            removeAllListeners: () => {},
+            end: force => {
+                endedWithForce = force;
+            },
+        };
+
+        shutdownPrinterContext(context, timers, timer => cleared.push(timer));
+
+        expect(context.shuttingDown).to.equal(true);
+        expect(cleared).to.deep.equal(['mqtt-retry', 'polling']);
+        expect(timers.A1_Mini).to.equal(null);
+        expect(timers.A1_Mini_dataPolling).to.equal(null);
+        expect(context.client).to.equal(null);
+        expect(endedWithForce).to.equal(true);
+        expect(context.clientConnection.connected).to.equal(false);
+    });
+
+    it('makes printer shutdown idempotent', () => {
+        const context = createPrinterContext({ config: {}, log: {} }, { id: 'P1', serial: 'S' });
+        let clearedCount = 0;
+        const timers = { P1: 'timer' };
+        shutdownPrinterContext(context, timers, () => clearedCount++);
+        shutdownPrinterContext(context, timers, () => clearedCount++);
+        expect(clearedCount).to.equal(1);
     });
 
     it('routes fully qualified states to the configured printer ID', () => {
