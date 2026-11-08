@@ -1164,9 +1164,7 @@ class BambulabConnect extends utils.Adapter {
                 // command) lets Admin update its live config data, refresh the table,
                 // and save the configuration through its normal UI lifecycle.
                 this.config = updatedNative;
-                this.log.info(
-                    `Returning ${additions.length} discovered printer row(s) to Admin for config update.`,
-                );
+                this.log.info(`Returning ${additions.length} discovered printer row(s) to Admin for config update.`);
                 this.sendTo(
                     obj.from,
                     obj.command,
