@@ -121,9 +121,18 @@ class BambulabConnect extends utils.Adapter {
             this.log.warn(`Could not clean up removed printer objects: ${e}`);
         }
 
+        const credentialConfigSource =
+            Array.isArray(this.config.printers) && this.config.printers.length > 0 ? 'printer table' : 'legacy config';
+
         for (const printer of printers) {
             const context = createPrinterContext(this, printer);
             this.printers.set(printer.id, context);
+
+            // Safe credential diagnostics: never log the access token itself.
+            const accessToken = context.config.Password;
+            this.log.info(
+                `Credential diagnostics for "${context.printerName}": source=${credentialConfigSource}, token present=${Boolean(accessToken)}, type=${typeof accessToken}, length=${typeof accessToken === 'string' ? accessToken.length : 'n/a'}.`,
+            );
 
             // Per-printer connection state; the instance-wide indicator is true
             // whenever at least one configured printer is connected.
