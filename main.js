@@ -15,7 +15,12 @@ const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplo
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
-const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext, markPrinterDisconnected } = require('./lib/printerRuntime');
+const {
+    createPrinterContext,
+    getPrinterIdFromStateId,
+    shutdownPrinterContext,
+    markPrinterDisconnected,
+} = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
@@ -299,7 +304,9 @@ class BambulabConnect extends utils.Adapter {
             });
 
             client.on('end', () => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 markPrinterDisconnected(this, this.setState.bind(this));
             });
 
