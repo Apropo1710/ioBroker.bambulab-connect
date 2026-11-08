@@ -1159,18 +1159,24 @@ class BambulabConnect extends utils.Adapter {
             };
 
             if (additions.length > 0) {
-                // Persist the merged printer list first. The instance-config Admin
-                // view does not reliably reinitialize ConfigTable from response.native.
-                // A backend refresh command makes Admin reload the instance GUI and
-                // its native configuration from the saved object.
-                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                    native: { printers: updatedNative.printers },
-                });
+                // Return the updated native configuration through the Admin sendTo
+                // response. jsonConfig's useNative option applies this to the open
+                // form; saveConfig then asks Admin to persist it through its normal
+                // configuration-save flow. Do not write the instance object directly
+                // or reload the browser: both bypass the ConfigTable's live form state.
                 this.config = updatedNative;
                 this.log.info(
-                    `Saved ${additions.length} discovered printer row(s); requesting Admin instance-config refresh.`,
+                    `Returning ${additions.length} discovered printer row(s) to Admin for configuration update.`,
                 );
-                this.sendTo(obj.from, obj.command, { reloadBrowser: true }, obj.callback);
+                this.sendTo(
+                    obj.from,
+                    obj.command,
+                    {
+                        native: updatedNative,
+                        saveConfig: true,
+                    },
+                    obj.callback,
+                );
                 return;
             }
 
