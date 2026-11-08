@@ -73,7 +73,7 @@ class BambulabConnect extends utils.Adapter {
             language = sys_conf.common.language;
         }
 
-        await 
+        await this.setState('info.connection', false, true);
         await this.loadHMSErrorCodeTranslations();
 
         const printersWithUniqueIds = ensureUniqueIds(getPrinters(this.config));
@@ -276,7 +276,7 @@ class BambulabConnect extends utils.Adapter {
                     this.log.info(`Printer connected successfully`);
                 }
                 this.clientConnection.connected = true;
-                
+
                 this.clientConnection.connectError = false;
                 this.clientConnection.initiated = false; // Reset initiated flag on successful connection
                 this.clientConnection.reconnectMessageShown = false; // Reset for future disconnections
@@ -386,7 +386,7 @@ class BambulabConnect extends utils.Adapter {
                     );
                 }
                 this.clientConnection.connected = false;
-                
+
 
                 // Try to reconnect by creating a new this.client instead of using reconnect()
                 if (timeouts[this.printerId]) {
