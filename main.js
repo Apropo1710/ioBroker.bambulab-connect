@@ -1043,16 +1043,20 @@ class BambulabConnect extends utils.Adapter {
 
         if (obj.command === 'getDiscoveryResults') {
             const lines = this.lastDiscoveryData.length
-                ? this.lastDiscoveryData.map((printer, index) => [
-                      `Printer ${index + 1}: ${printer.name || printer.model || printer.modelCode || 'BambuLab printer'}`,
-                      `Name: ${printer.name || ''}`,
-                      `IP address: ${printer.ip || ''}`,
-                      `Serial number: ${printer.serial || ''}`,
-                      `Model: ${printer.model || ''}`,
-                      `Model code: ${printer.modelCode || ''}`,
-                      `Firmware: ${printer.firmware || ''}`,
-                      printer.configured ? 'Already configured' : 'Not configured',
-                  ].join('\\n')).join('\\n\\n')
+                ? this.lastDiscoveryData
+                      .map((printer, index) =>
+                          [
+                              `Printer ${index + 1}: ${printer.name || printer.model || printer.modelCode || 'BambuLab printer'}`,
+                              `Name: ${printer.name || ''}`,
+                              `IP address: ${printer.ip || ''}`,
+                              `Serial number: ${printer.serial || ''}`,
+                              `Model: ${printer.model || ''}`,
+                              `Model code: ${printer.modelCode || ''}`,
+                              `Firmware: ${printer.firmware || ''}`,
+                              printer.configured ? 'Already configured' : 'Not configured',
+                          ].join('\\n'),
+                      )
+                      .join('\\n\\n')
                 : 'No discovery results yet. Run the BambuLab printer search first.';
             this.sendTo(obj.from, obj.command, lines, obj.callback);
             return;
