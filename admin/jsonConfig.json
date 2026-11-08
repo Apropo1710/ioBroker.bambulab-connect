@@ -102,22 +102,6 @@
                         {
                             "label": "H3C (experimental)",
                             "value": "H3C"
-                        },
-                        {
-                            "label": "Legacy: A1-Series",
-                            "value": "A1-Series"
-                        },
-                        {
-                            "label": "Legacy: H2D-Series",
-                            "value": "H2D-Series"
-                        },
-                        {
-                            "label": "Legacy: P1-Series",
-                            "value": "P1-Series"
-                        },
-                        {
-                            "label": "Legacy: X1-Series",
-                            "value": "X1-Series"
                         }
                     ]
                 },
