@@ -4,17 +4,26 @@
     "items": {
         "discoveryIntro": {
             "type": "staticText",
-            "text": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an access code; enter each code manually."
+            "text": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually."
         },
         "discoverPrinters": {
             "type": "sendTo",
             "command": "discoverPrinters",
             "label": "Search for BambuLab printers",
-            "help": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.",
+            "help": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN Access Token.",
             "showProcess": true,
             "timeout": 45000,
             "useNative": true,
-            "icon": "search"
+            "icon": "search",
+            "variant": "contained",
+            "controlStyle": {
+                "fontWeight": "bold",
+                "fontSize": "1rem",
+                "minHeight": "48px",
+                "padding": "10px 24px"
+            },
+            "xs": 12,
+            "sm": 12
         },
         "discoveryResults": {
             "type": "textSendTo",

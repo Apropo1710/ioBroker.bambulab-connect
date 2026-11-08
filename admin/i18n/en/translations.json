@@ -20,5 +20,7 @@
     "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an access code; enter each code manually.": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an access code; enter each code manually.",
     "Search for BambuLab printers": "Search for BambuLab printers",
     "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.",
-    "Last network scan": "Last network scan"
+    "Last network scan": "Last network scan",
+    "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually.": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually.",
+    "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN Access Token.": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN Access Token."
 }
