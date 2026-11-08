@@ -1158,11 +1158,12 @@ class BambulabConnect extends utils.Adapter {
                 printers: [...configuredPrinters, ...additions],
             };
             const response = {
-                native: updatedNative,
+                // ioBroker Admin applies response.native one top-level attribute at a time.
+                // Returning the entire native object can overwrite the updated printers
+                // array with a stale copy from the original config on a later iteration.
+                // Return only the changed attribute so the table update remains intact.
+                native: { printers: updatedNative.printers },
                 saveConfig: additions.length > 0,
-                // Avoid response.command here: ioBroker Admin handles command responses
-                // before native/saveConfig and returns early, so the printer table
-                // would never receive the updated native configuration.
             };
             this.log.debug(
                 `Discovery response includes ${updatedNative.printers.length} printer configuration row(s).`,
