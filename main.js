@@ -18,6 +18,7 @@ const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
 const { compareCredentialValues } = require('./lib/credentialDiagnostics');
+const { createAdminDiscoveryResponse } = require('./lib/adminDiscoveryResponse');
 const {
     createPrinterContext,
     getPrinterIdFromStateId,
@@ -1171,10 +1172,7 @@ class BambulabConnect extends utils.Adapter {
                 this.sendTo(
                     obj.from,
                     obj.command,
-                    {
-                        native: { printers: updatedNative.printers },
-                        saveConfig: true,
-                    },
+                    createAdminDiscoveryResponse(updatedNative.printers),
                     obj.callback,
                 );
                 return;
