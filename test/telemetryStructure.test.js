@@ -31,6 +31,30 @@ describe('Printer telemetry folder organization', () => {
         expect(result.device.device).to.equal(device);
         expect(result.raw.unknown_field).to.equal(unknown);
     });
+
+    it('puts each connected AMS unit under a single units folder', () => {
+        const units = [
+            { ams_id: 0, tray: [{ id: 0, tray_type: 'PLA' }, { id: 1 }, { id: 2 }, { id: 3 }] },
+            { ams_id: 1, tray: [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }] },
+        ];
+        const result = organizeTelemetry({
+            ams: {
+                ams: units,
+                ams_status: 1,
+                ams_exist_bits: '3',
+            },
+            vt_tray: { tray_type: 'PETG' },
+        });
+        expect(result.ams.units).to.deep.equal(units);
+        expect(result.ams.ams_status).to.equal(1);
+        expect(result.ams.ams_exist_bits).to.equal('3');
+        expect(result.ams).not.to.have.property('ams');
+        expect(result.ams.units).to.have.length(2);
+        expect(result.ams.units[0].tray).to.have.length(4);
+        expect(result.ams.units[1].tray).to.have.length(4);
+        expect(result.ams.vt_tray).to.deep.equal({ tray_type: 'PETG' });
+    });
+
     it('returns non-object payloads unchanged', () => {
         expect(organizeTelemetry(null)).to.equal(null);
         expect(organizeTelemetry('payload')).to.equal('payload');
