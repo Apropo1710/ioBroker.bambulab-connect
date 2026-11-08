@@ -387,7 +387,6 @@ class BambulabConnect extends utils.Adapter {
                 }
                 this.clientConnection.connected = false;
 
-
                 // Try to reconnect by creating a new this.client instead of using reconnect()
                 if (timeouts[this.printerId]) {
                     this.clearTimeout(timeouts[this.printerId]);
