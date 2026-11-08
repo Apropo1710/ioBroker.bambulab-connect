@@ -1024,7 +1024,16 @@ class BambulabConnect extends utils.Adapter {
      * @param {ioBroker.Message} obj Admin message.
      */
     async onMessage(obj) {
-        if (!obj || !obj.command || !obj.callback) {
+        if (!obj || !obj.command) {
+            return;
+        }
+
+        this.log.debug(
+            `Admin message received: command=${obj.command}, from=${obj.from || 'unknown'}, callback=${Boolean(obj.callback)}`,
+        );
+
+        if (!obj.callback) {
+            this.log.warn(`Admin command "${obj.command}" arrived without a callback; cannot return a response.`);
             return;
         }
 
@@ -1050,6 +1059,7 @@ class BambulabConnect extends utils.Adapter {
         this.discoveryInProgress = true;
         try {
             this.log.info('Searching the local network for BambuLab printers (SSDP/UDP)...');
+            this.log.debug('Discovery request accepted; starting UDP scan with a 10-second timeout.');
             const discovered = await discoverPrinters({ timeoutMs: 10000 });
             const configuredPrinters = Array.isArray(this.config.printers)
                 ? this.config.printers.filter(item => item && typeof item === 'object')
@@ -1142,6 +1152,7 @@ class BambulabConnect extends utils.Adapter {
                 saveConfig: additions.length > 0,
                 command: { command: 'message', message: this.lastDiscoveryResult },
             };
+            this.log.debug(`Returning discovery response to ${obj.from}: ${discovered.length} detected, ${additions.length} added.`);
             this.sendTo(obj.from, obj.command, response, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;

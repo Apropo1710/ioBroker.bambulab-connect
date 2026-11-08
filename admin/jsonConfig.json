@@ -12,7 +12,7 @@
             "label": "Search for BambuLab printers",
             "help": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.",
             "showProcess": true,
-            "timeout": 25000,
+            "timeout": 45000,
             "useNative": true,
             "icon": "search"
         },
