@@ -1072,7 +1072,9 @@ class BambulabConnect extends utils.Adapter {
                     currentConfig = instanceObject.native;
                 }
             } catch (error) {
-                this.log.debug(`Could not read latest saved instance configuration for discovery: ${error.message || error}`);
+                this.log.debug(
+                    `Could not read latest saved instance configuration for discovery: ${error.message || error}`,
+                );
             }
 
             const configuredPrinters = Array.isArray(currentConfig.printers)
