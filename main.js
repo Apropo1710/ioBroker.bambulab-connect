@@ -1061,19 +1061,33 @@ class BambulabConnect extends utils.Adapter {
             this.log.info('Searching the local network for BambuLab printers (SSDP/UDP)...');
             this.log.debug('Discovery request accepted; starting UDP scan with a 10-second timeout.');
             const discovered = await discoverPrinters({ timeoutMs: 10000 });
-            const configuredPrinters = Array.isArray(this.config.printers)
-                ? this.config.printers.filter(item => item && typeof item === 'object')
+            // Read the latest persisted instance configuration. The adapter's
+            // in-memory this.config can be stale if the user saved settings while
+            // this instance was already running; returning that stale snapshot to
+            // Admin would overwrite newer table values during discovery.
+            let currentConfig = this.config;
+            try {
+                const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+                if (instanceObject?.native && typeof instanceObject.native === 'object') {
+                    currentConfig = instanceObject.native;
+                }
+            } catch (error) {
+                this.log.debug(`Could not read latest saved instance configuration for discovery: ${error.message || error}`);
+            }
+
+            const configuredPrinters = Array.isArray(currentConfig.printers)
+                ? currentConfig.printers.filter(item => item && typeof item === 'object')
                 : [];
 
             // Preserve a legacy single-printer config when the table is empty.
-            if (!configuredPrinters.length && this.config.host && this.config.serial && this.config.Password) {
+            if (!configuredPrinters.length && currentConfig.host && currentConfig.serial && currentConfig.Password) {
                 configuredPrinters.push({
-                    name: this.config.printerName || this.config.printerModel || this.config.serial,
-                    host: this.config.host,
-                    serial: this.config.serial,
-                    Password: this.config.Password,
-                    printerModel: this.config.printerModel || '',
-                    requestInterval: this.config.requestInterval || 300,
+                    name: currentConfig.printerName || currentConfig.printerModel || currentConfig.serial,
+                    host: currentConfig.host,
+                    serial: currentConfig.serial,
+                    Password: currentConfig.Password,
+                    printerModel: currentConfig.printerModel || '',
+                    requestInterval: currentConfig.requestInterval || 300,
                 });
             }
 
@@ -1147,11 +1161,21 @@ class BambulabConnect extends utils.Adapter {
                 `Network discovery completed: ${discovered.length} printer(s) found, ` +
                     `${additions.length} new configuration row(s).`,
             );
+            const updatedNative = {
+                ...currentConfig,
+                printers: [...configuredPrinters, ...additions],
+            };
             const response = {
-                native: { ...this.config, printers: [...configuredPrinters, ...additions] },
+                native: updatedNative,
                 saveConfig: additions.length > 0,
+                // A full Admin refresh after the native config update ensures
+                // the printer table is rebuilt with the returned rows.
+                reloadBrowser: additions.length > 0,
                 command: { command: 'message', message: this.lastDiscoveryResult },
             };
+            this.log.debug(
+                `Discovery response includes ${updatedNative.printers.length} printer configuration row(s).`,
+            );
             this.log.debug(
                 `Returning discovery response to ${obj.from}: ${discovered.length} detected, ${additions.length} added.`,
             );
