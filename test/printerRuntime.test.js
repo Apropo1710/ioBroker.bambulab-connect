@@ -1,7 +1,13 @@
 'use strict';
 
 const { expect } = require('chai');
-const {\n    createPrinterContext,\n    getPrinterIdFromStateId,\n    shutdownPrinterContext,\n    markPrinterDisconnected,\n    getCachedHmsErrorJson,\n} = require('../lib/printerRuntime');
+const {
+    createPrinterContext,
+    getPrinterIdFromStateId,
+    shutdownPrinterContext,
+    markPrinterDisconnected,
+    getCachedHmsErrorJson,
+} = require('../lib/printerRuntime');
 
 describe('printerRuntime', () => {
     it('creates independent runtime fields for each printer', () => {
@@ -163,4 +169,41 @@ describe('printerRuntime', () => {
         expect(getPrinterIdFromStateId('other.0.X1C.control.pause', 'bambulab-connect.0', ids))
             .to.equal(null);
     });
+    describe('HMS translation cache', () => {
+        it('reuses translation for repeated payloads and ignores the adapter marker', () => {
+            const context = createPrinterContext({ config: {}, log: {} }, { id: 'P1', serial: 'S1' });
+            const payload = { '0': { attr: 1, code: 2 } };
+            let translations = 0;
+            const translate = entries => { translations++; return Object.keys(entries); };
+            const first = getCachedHmsErrorJson(context, payload, 'en', translate);
+            payload.hmsErrors = true;
+            const second = getCachedHmsErrorJson(context, payload, 'en', translate);
+            expect(first).to.equal(second);
+            expect(translations).to.equal(1);
+        });
+        it('invalidates on payload and language changes', () => {
+            const context = createPrinterContext({ config: {}, log: {} }, { id: 'P1', serial: 'S1' });
+            let translations = 0;
+            const translate = entries => { translations++; return Object.keys(entries); };
+            getCachedHmsErrorJson(context, { '0': { attr: 1, code: 2 } }, 'en', translate);
+            getCachedHmsErrorJson(context, { '0': { attr: 1, code: 3 } }, 'en', translate);
+            getCachedHmsErrorJson(context, { '0': { attr: 1, code: 3 } }, 'de', translate);
+            expect(translations).to.equal(3);
+        });
+        it('keeps caches separate between printers and clears cache for missing HMS', () => {
+            const adapter = { config: {}, log: {} };
+            const first = createPrinterContext(adapter, { id: 'P1', serial: 'S1' });
+            const second = createPrinterContext(adapter, { id: 'P2', serial: 'S2' });
+            let translations = 0;
+            const translate = entries => { translations++; return Object.keys(entries); };
+            const payload = { '0': { attr: 1, code: 2 } };
+            getCachedHmsErrorJson(first, payload, 'en', translate);
+            getCachedHmsErrorJson(second, payload, 'en', translate);
+            expect(translations).to.equal(2);
+            getCachedHmsErrorJson(first, null, 'en', translate);
+            expect(first.hmsErrorCache).to.equal(null);
+            expect(second.hmsErrorCache).not.to.equal(null);
+        });
+    });
+
 });
