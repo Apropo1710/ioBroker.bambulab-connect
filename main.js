@@ -56,6 +56,7 @@ class BambulabConnect extends utils.Adapter {
         this.printers = new Map();
         this.discoveryInProgress = false;
         this.lastDiscoveryResult = '';
+        this.lastDiscoveryData = [];
         this.on('ready', this.onReady.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -174,8 +175,8 @@ class BambulabConnect extends utils.Adapter {
                 `Credential comparison for "${context.printerName}" against bambulab.0 native Password: original config available=${legacyConfigAvailable}, result=${credentialComparison === null ? 'unavailable' : credentialComparison ? 'MATCH' : 'DIFFERENT'}.`,
             );
 
-            // Per-printer connection state; the instance-wide indicator is true
-            // whenever at least one configured printer is connected.
+            // Keep connection status per printer. The adapter instance itself
+            // remains connected while its runtime is active, even if printers are offline.
             await this.extendObjectAsync(`${printer.id}.info`, {
                 type: 'channel',
                 common: { name: `${context.printerName} information` },
@@ -206,14 +207,16 @@ class BambulabConnect extends utils.Adapter {
                     state && typeof state === 'object'
                         ? adapterSetState(printerStateId, state)
                         : adapterSetState(printerStateId, state, ack);
-                const anyConnected = [...this.printers.values()].some(item => item.clientConnection.connected);
-                const writeInstanceState = adapterSetState('info.connection', anyConnected, true);
-                return Promise.all([writePrinterState, writeInstanceState]);
+                return writePrinterState;
             };
 
             this.log.info(`Starting printer runtime "${context.printerName}" (${printer.serial}) at ${printer.host}`);
             context.mqttMessageHandle();
         }
+
+        // The adapter is operational when its runtime is initialized. Printer
+        // availability is reported separately via <printer>.info.connection.
+        await this.setStateAsync('info.connection', { val: true, ack: true });
     }
 
     /**
@@ -1038,6 +1041,23 @@ class BambulabConnect extends utils.Adapter {
             return;
         }
 
+        if (obj.command === 'getDiscoveryResults') {
+            const lines = this.lastDiscoveryData.length
+                ? this.lastDiscoveryData.map((printer, index) => [
+                      `Printer ${index + 1}: ${printer.name || printer.model || printer.modelCode || 'BambuLab printer'}`,
+                      `Name: ${printer.name || ''}`,
+                      `IP address: ${printer.ip || ''}`,
+                      `Serial number: ${printer.serial || ''}`,
+                      `Model: ${printer.model || ''}`,
+                      `Model code: ${printer.modelCode || ''}`,
+                      `Firmware: ${printer.firmware || ''}`,
+                      printer.configured ? 'Already configured' : 'Not configured',
+                  ].join('\\n')).join('\\n\\n')
+                : 'No discovery results yet. Run the BambuLab printer search first.';
+            this.sendTo(obj.from, obj.command, lines, obj.callback);
+            return;
+        }
+
         if (obj.command !== 'discoverPrinters') {
             return;
         }
@@ -1103,7 +1123,9 @@ class BambulabConnect extends utils.Adapter {
             this.log.info(
                 `Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`,
             );
-            this.sendTo(obj.from, obj.command, createAdminDiscoveryResponse(discovered, knownSerials), obj.callback);
+            const discoveryResponse = createAdminDiscoveryResponse(discovered, knownSerials);
+            this.lastDiscoveryData = discoveryResponse.native.discoveryResults;
+            this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
             this.log.warn(this.lastDiscoveryResult);

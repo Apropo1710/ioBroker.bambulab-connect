@@ -718,6 +718,19 @@
             "md": 6,
             "lg": 4,
             "xl": 4
+        },
+        "discoveryResultsDisplay": {
+            "type": "textSendTo",
+            "command": "getDiscoveryResults",
+            "label": "Discovered printers",
+            "container": "text",
+            "copyToClipboard": true,
+            "alsoDependsOn": [
+                "discoveryResults"
+            ],
+            "noTranslation": true,
+            "xs": 12,
+            "sm": 12
         }
     }
 }
