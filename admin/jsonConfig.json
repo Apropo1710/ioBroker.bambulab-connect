@@ -25,13 +25,6 @@
             "xs": 12,
             "sm": 12
         },
-        "discoveryResults": {
-            "type": "textSendTo",
-            "command": "getDiscoveryResult",
-            "label": "Last network scan",
-            "container": "div",
-            "copyToClipboard": true
-        },
         "printers": {
             "type": "table",
             "label": "BambuLab printers",

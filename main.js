@@ -1037,16 +1037,6 @@ class BambulabConnect extends utils.Adapter {
             return;
         }
 
-        if (obj.command === 'getDiscoveryResult') {
-            this.sendTo(
-                obj.from,
-                obj.command,
-                { text: this.lastDiscoveryResult || 'No network scan has been run yet.' },
-                obj.callback,
-            );
-            return;
-        }
-
         if (obj.command !== 'discoverPrinters') {
             return;
         }
