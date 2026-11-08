@@ -135,7 +135,8 @@
         "licenseInformation": {
             "license": "MIT",
             "type": "free"
-        }
+        },
+        "messagebox": true
     },
     "encryptedNative": [
         "Password",
