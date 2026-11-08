@@ -1100,13 +1100,10 @@ class BambulabConnect extends utils.Adapter {
                 ? `Found ${discovered.length} BambuLab printer(s). Discovery data is displayed separately; add printers manually and enter each access token yourself.`
                 : 'No BambuLab printer was detected. Check that the printer and ioBroker are on the same LAN/VLAN and that UDP discovery traffic is allowed.';
 
-            this.log.info(`Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`);
-            this.sendTo(
-                obj.from,
-                obj.command,
-                createAdminDiscoveryResponse(discovered, knownSerials),
-                obj.callback,
+            this.log.info(
+                `Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`,
             );
+            this.sendTo(obj.from, obj.command, createAdminDiscoveryResponse(discovered, knownSerials), obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
             this.log.warn(this.lastDiscoveryResult);
