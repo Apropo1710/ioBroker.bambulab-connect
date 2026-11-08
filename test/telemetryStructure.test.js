@@ -4,7 +4,14 @@ const organizeTelemetry = require('../lib/telemetryStructure');
 
 describe('Printer telemetry folder organization', () => {
     it('groups common telemetry fields by purpose', () => {
-        const result = organizeTelemetry({ nozzle_temper: 220, bed_temper: 60, mc_percent: 45, cooling_fan_speed: 50, wifi_signal: '-45dBm', ams_status: 1 });
+        const result = organizeTelemetry({
+            nozzle_temper: 220,
+            bed_temper: 60,
+            mc_percent: 45,
+            cooling_fan_speed: 50,
+            wifi_signal: '-45dBm',
+            ams_status: 1,
+        });
         expect(result.temperature).to.deep.equal({ nozzle_temper: 220, bed_temper: 60 });
         expect(result.print).to.deep.equal({ mc_percent: 45 });
         expect(result.fans).to.deep.equal({ cooling_fan_speed: 50 });
