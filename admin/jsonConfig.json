@@ -7,7 +7,6 @@
             "label": "BambuLab printers",
             "help": "Add one row for each printer. All printers are managed independently by this adapter instance.",
             "titleAttribute": "name",
-            "encryptedAttributes": ["Password"],
             "items": [
                 {
                     "attr": "id",
@@ -51,25 +50,82 @@
                     "width": "15%",
                     "default": "P1-Series",
                     "options": [
-                        {"label": "A1 mini", "value": "A1 mini"},
-                        {"label": "A1", "value": "A1"},
-                        {"label": "A2L (experimental)", "value": "A2L"},
-                        {"label": "P1P", "value": "P1P"},
-                        {"label": "P1S", "value": "P1S"},
-                        {"label": "P2S (experimental)", "value": "P2S"},
-                        {"label": "X1", "value": "X1"},
-                        {"label": "X1 Carbon (X1C)", "value": "X1C"},
-                        {"label": "X1E", "value": "X1E"},
-                        {"label": "X2D (experimental)", "value": "X2D"},
-                        {"label": "H2D", "value": "H2D"},
-                        {"label": "H2D Pro (experimental)", "value": "H2D Pro"},
-                        {"label": "H2S (experimental)", "value": "H2S"},
-                        {"label": "H2C (experimental)", "value": "H2C"},
-                        {"label": "H3C (experimental)", "value": "H3C"},
-                        {"label": "Legacy: A1-Series", "value": "A1-Series"},
-                        {"label": "Legacy: H2D-Series", "value": "H2D-Series"},
-                        {"label": "Legacy: P1-Series", "value": "P1-Series"},
-                        {"label": "Legacy: X1-Series", "value": "X1-Series"}
+                        {
+                            "label": "A1 mini",
+                            "value": "A1 mini"
+                        },
+                        {
+                            "label": "A1",
+                            "value": "A1"
+                        },
+                        {
+                            "label": "A2L (experimental)",
+                            "value": "A2L"
+                        },
+                        {
+                            "label": "P1P",
+                            "value": "P1P"
+                        },
+                        {
+                            "label": "P1S",
+                            "value": "P1S"
+                        },
+                        {
+                            "label": "P2S (experimental)",
+                            "value": "P2S"
+                        },
+                        {
+                            "label": "X1",
+                            "value": "X1"
+                        },
+                        {
+                            "label": "X1 Carbon (X1C)",
+                            "value": "X1C"
+                        },
+                        {
+                            "label": "X1E",
+                            "value": "X1E"
+                        },
+                        {
+                            "label": "X2D (experimental)",
+                            "value": "X2D"
+                        },
+                        {
+                            "label": "H2D",
+                            "value": "H2D"
+                        },
+                        {
+                            "label": "H2D Pro (experimental)",
+                            "value": "H2D Pro"
+                        },
+                        {
+                            "label": "H2S (experimental)",
+                            "value": "H2S"
+                        },
+                        {
+                            "label": "H2C (experimental)",
+                            "value": "H2C"
+                        },
+                        {
+                            "label": "H3C (experimental)",
+                            "value": "H3C"
+                        },
+                        {
+                            "label": "Legacy: A1-Series",
+                            "value": "A1-Series"
+                        },
+                        {
+                            "label": "Legacy: H2D-Series",
+                            "value": "H2D-Series"
+                        },
+                        {
+                            "label": "Legacy: P1-Series",
+                            "value": "P1-Series"
+                        },
+                        {
+                            "label": "Legacy: X1-Series",
+                            "value": "X1-Series"
+                        }
                     ]
                 },
                 {
