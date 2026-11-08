@@ -12,6 +12,7 @@ const mqtt = require('mqtt'); // MQTT request library
 const { default: axios } = require('axios'); // Http request library
 
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
+const organizeTelemetry = require('./lib/telemetryStructure');
 const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
@@ -616,7 +617,8 @@ class BambulabConnect extends utils.Adapter {
             }
 
             // Explore JSON & create states
-            const returnJONexplorer = await jsonExplorer.traverseJson(message.print, this.printerId, false, false, 0);
+            const organizedPrint = organizeTelemetry(message.print);
+            const returnJONexplorer = await jsonExplorer.traverseJson(organizedPrint, this.printerId, false, false, 0);
             if (this.log.level === 'debug' || this.log.level === 'silly') {
                 this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
             }
