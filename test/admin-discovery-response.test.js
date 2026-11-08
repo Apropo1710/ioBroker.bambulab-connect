@@ -11,8 +11,6 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
                 ip: '192.168.178.60',
                 serial: 'ABC123',
                 model: 'X1C',
-                modelCode: 'BL-P001',
-                firmware: '01.08.00.00',
             },
         ];
 
@@ -26,8 +24,6 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
                 ip: '192.168.178.60',
                 serial: 'ABC123',
                 model: 'X1C',
-                modelCode: 'BL-P001',
-                firmware: '01.08.00.00',
                 configured: false,
             },
         ]);
@@ -56,8 +52,6 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
             ip: '10.0.0.2',
             serial: '',
             model: '',
-            modelCode: '',
-            firmware: '',
             configured: false,
         });
     });
