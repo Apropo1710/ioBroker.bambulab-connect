@@ -1157,21 +1157,39 @@ class BambulabConnect extends utils.Adapter {
                 ...currentConfig,
                 printers: [...configuredPrinters, ...additions],
             };
-            const response = {
-                // ioBroker Admin applies response.native one top-level attribute at a time.
-                // Returning the entire native object can overwrite the updated printers
-                // array with a stale copy from the original config on a later iteration.
-                // Return only the changed attribute so the table update remains intact.
-                native: { printers: updatedNative.printers },
-                saveConfig: additions.length > 0,
-            };
+
+            if (additions.length > 0) {
+                // json-config's table keeps its own row state after mount and does not
+                // reload that state when response.native changes. Persist the discovered
+                // rows first, then ask Admin for a full config refresh so the table is
+                // remounted from the saved native configuration.
+                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
+                    native: updatedNative,
+                });
+                this.config = updatedNative;
+                this.log.info(
+                    `Saved ${additions.length} discovered printer row(s) to the instance configuration; requesting Admin refresh.`,
+                );
+                this.sendTo(
+                    obj.from,
+                    obj.command,
+                    { command: { command: 'refresh', fullRefresh: true } },
+                    obj.callback,
+                );
+                return;
+            }
+
             this.log.debug(
-                `Discovery response includes ${updatedNative.printers.length} printer configuration row(s).`,
+                `Discovery found no new printers; existing configuration remains unchanged (${updatedNative.printers.length} row(s)).`,
             );
-            this.log.debug(
-                `Returning discovery response to ${obj.from}: ${discovered.length} detected, ${additions.length} added.`,
+            this.sendTo(
+                obj.from,
+                obj.command,
+                {
+                    result: `Found ${discovered.length} printer(s), but all are already configured.`,
+                },
+                obj.callback,
             );
-            this.sendTo(obj.from, obj.command, response, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
             this.log.warn(this.lastDiscoveryResult);
