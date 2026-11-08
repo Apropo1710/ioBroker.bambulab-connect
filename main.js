@@ -1152,7 +1152,9 @@ class BambulabConnect extends utils.Adapter {
                 saveConfig: additions.length > 0,
                 command: { command: 'message', message: this.lastDiscoveryResult },
             };
-            this.log.debug(`Returning discovery response to ${obj.from}: ${discovered.length} detected, ${additions.length} added.`);
+            this.log.debug(
+                `Returning discovery response to ${obj.from}: ${discovered.length} detected, ${additions.length} added.`,
+            );
             this.sendTo(obj.from, obj.command, response, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
