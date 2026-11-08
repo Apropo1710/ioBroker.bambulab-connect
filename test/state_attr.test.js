@@ -33,6 +33,14 @@ describe('State Attributes Type Compatibility', () => {
         expect(stateAttr.color.type).to.equal('string');
     });
 
+    it('should define metadata for X1-series MQTT telemetry fields', () => {
+        expect(stateAttr.print_time.type).to.equal('number');
+        expect(stateAttr.rtt.type).to.equal('string');
+        expect(stateAttr.retrans.type).to.equal('number');
+        expect(stateAttr.mac.type).to.equal('string');
+        expect(stateAttr.fun2.type).to.equal('string');
+    });
+
     it('should have printer-specific attributes', () => {
         expect(stateAttr.aux).to.exist;
         expect(stateAttr.aux.type).to.equal('string');
