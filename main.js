@@ -312,7 +312,9 @@ class BambulabConnect extends utils.Adapter {
 
             // MQTT.js emits close on transport loss, including during automatic reconnect.
             client.on('close', () => {
-                if (this.client !== client || this.shuttingDown) return;
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
                 markPrinterDisconnected(this, this.setState.bind(this));
             });
 
