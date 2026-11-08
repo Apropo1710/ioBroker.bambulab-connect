@@ -15,6 +15,8 @@ Bambulab Connect is a community-maintained derivative of the original [ioBroker.
 With credits to [kmxak](https://forum.iobroker.net/user/kmxak), [djalexz](https://forum.iobroker.net/user/djalexz), all other involved and inspired by [this forum thread](https://forum.iobroker.net/topic/61585/bambu-lab-3d-drucker-mqtt-integration)
 this adapter integrates Bambulab 3D-Printers into ioBroker.
 
+You can use **Search for BambuLab printers** in the adapter settings to detect devices announced via local SSDP/UDP. Detected printers are added to the table automatically; their LAN access codes are not discoverable and must be entered manually. Save your current settings before starting a scan.
+
 Add one row per BambuLab printer in the adapter settings. Each row needs an object ID,
 display name (optional), IP address, access token, serial number and model. All printers
 can be managed in one adapter instance; their MQTT connections and state trees are isolated.

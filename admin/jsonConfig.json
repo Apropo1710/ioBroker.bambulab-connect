@@ -2,6 +2,27 @@
     "i18n": true,
     "type": "panel",
     "items": {
+        "discoveryIntro": {
+            "type": "staticText",
+            "text": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an access code; enter each code manually."
+        },
+        "discoverPrinters": {
+            "type": "sendTo",
+            "command": "discoverPrinters",
+            "label": "Search for BambuLab printers",
+            "help": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.",
+            "showProcess": true,
+            "timeout": 25000,
+            "useNative": true,
+            "icon": "search"
+        },
+        "discoveryResults": {
+            "type": "textSendTo",
+            "command": "getDiscoveryResult",
+            "label": "Last network scan",
+            "container": "div",
+            "copyToClipboard": true
+        },
         "printers": {
             "type": "table",
             "label": "BambuLab printers",

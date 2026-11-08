@@ -9,6 +9,7 @@
 const utils = require('@iobroker/adapter-core');
 
 const mqtt = require('mqtt'); // MQTT request library
+const { discoverPrinters } = require('./lib/printerDiscovery');
 const { default: axios } = require('axios'); // Http request library
 
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
@@ -52,7 +53,10 @@ class BambulabConnect extends utils.Adapter {
         this.currentPrintingState = null;
         this.messageQueue = Promise.resolve();
         this.printers = new Map();
+        this.discoveryInProgress = false;
+        this.lastDiscoveryResult = '';
         this.on('ready', this.onReady.bind(this));
+        this.on('message', this.onMessage.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
         jsonExplorer.init(this, stateAttr);
@@ -1012,6 +1016,112 @@ class BambulabConnect extends utils.Adapter {
             return null;
         }
         return numericValue;
+    }
+
+    /**
+     * Handle Admin configuration actions.
+     *
+     * @param {ioBroker.Message} obj Admin message.
+     */
+    async onMessage(obj) {
+        if (!obj || !obj.command || !obj.callback) {
+            return;
+        }
+
+        if (obj.command === 'getDiscoveryResult') {
+            this.sendTo(obj.from, obj.command, { text: this.lastDiscoveryResult || 'No network scan has been run yet.' }, obj.callback);
+            return;
+        }
+
+        if (obj.command !== 'discoverPrinters') {
+            return;
+        }
+
+        if (this.discoveryInProgress) {
+            this.sendTo(obj.from, obj.command, { error: 'A network scan is already running.' }, obj.callback);
+            return;
+        }
+
+        this.discoveryInProgress = true;
+        try {
+            this.log.info('Searching the local network for BambuLab printers (SSDP/UDP)...');
+            const discovered = await discoverPrinters({ timeoutMs: 10000 });
+            const configuredPrinters = Array.isArray(this.config.printers) ? this.config.printers.filter(item => item && typeof item === 'object') : [];
+
+            // Preserve a legacy single-printer config when the table is empty.
+            if (!configuredPrinters.length && this.config.host && this.config.serial && this.config.Password) {
+                configuredPrinters.push({
+                    name: this.config.printerName || this.config.printerModel || this.config.serial,
+                    host: this.config.host,
+                    serial: this.config.serial,
+                    Password: this.config.Password,
+                    printerModel: this.config.printerModel || '',
+                    requestInterval: this.config.requestInterval || 300,
+                });
+            }
+
+            const knownSerials = new Set(configuredPrinters.map(item => String(item.serial || '').trim().toUpperCase()).filter(Boolean));
+            const knownNames = new Set(configuredPrinters.map(item => String(item.name || '').trim().toLowerCase()).filter(Boolean));
+            const additions = [];
+            const discoveredSummary = [];
+
+            for (const printer of discovered) {
+                const modelLabel = printer.model || printer.modelCode || 'BambuLab printer';
+                const printerLabel = printer.name || modelLabel;
+                discoveredSummary.push(printerLabel + ' — ' + printer.ip +
+                    (printer.serial ? ' — S/N: ' + printer.serial : '') +
+                    (printer.modelCode ? ' — model code: ' + printer.modelCode : ''));
+
+                if (!printer.serial || knownSerials.has(printer.serial.toUpperCase())) {
+                    continue;
+                }
+
+                const serialSuffix = printer.serial.slice(-4);
+                let name = String(printer.name || (modelLabel + '_' + serialSuffix)).trim();
+                if (knownNames.has(name.toLowerCase())) {
+                    name = name + '_' + serialSuffix;
+                }
+                let suffix = 2;
+                const baseName = name;
+                while (knownNames.has(name.toLowerCase())) {
+                    name = baseName + '_' + suffix++;
+                }
+                knownNames.add(name.toLowerCase());
+                knownSerials.add(printer.serial.toUpperCase());
+
+                additions.push({
+                    name,
+                    host: printer.ip,
+                    serial: printer.serial,
+                    Password: '',
+                    printerModel: printer.model || '',
+                    requestInterval: 300,
+                });
+            }
+
+            if (!discovered.length) {
+                this.lastDiscoveryResult = 'No BambuLab printer was detected. Check that the printer and ioBroker VM are on the same LAN/VLAN and that UDP discovery traffic is allowed. You can still enter a printer manually.';
+            } else {
+                this.lastDiscoveryResult = 'Found ' + discovered.length + ' BambuLab printer(s):\n' +
+                    discoveredSummary.join('\n') + '\n\nAdded ' + additions.length +
+                    ' new printer row(s). Access codes are not broadcast and must be entered manually.';
+            }
+
+            this.log.info('Network discovery completed: ' + discovered.length + ' printer(s) found, ' +
+                additions.length + ' new configuration row(s).');
+            const response = {
+                native: { ...this.config, printers: [...configuredPrinters, ...additions] },
+                saveConfig: additions.length > 0,
+                command: { command: 'message', message: this.lastDiscoveryResult },
+            };
+            this.sendTo(obj.from, obj.command, response, obj.callback);
+        } catch (error) {
+            this.lastDiscoveryResult = 'Network discovery failed: ' + (error.message || error);
+            this.log.warn(this.lastDiscoveryResult);
+            this.sendTo(obj.from, obj.command, { error: this.lastDiscoveryResult }, obj.callback);
+        } finally {
+            this.discoveryInProgress = false;
+        }
     }
 
     async onStateChange(id, state) {

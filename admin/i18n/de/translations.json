@@ -16,5 +16,9 @@
     "Serial number of device": "Seriennummer des Gerätes",
     "Upload g-code file": "G-Code-Datei hochladen",
     "X1-Series": "X1-Serie",
-    "Printer name": "Druckername"
+    "Printer name": "Druckername",
+    "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an access code; enter each code manually.": "BambuLab-Drucker automatisch im lokalen Netzwerk suchen. Bitte vor dem Scan die aktuellen Einstellungen speichern. Gefundene Drucker werden ohne Zugangscode zur Tabelle hinzugefügt; den Code bitte manuell eintragen.",
+    "Search for BambuLab printers": "BambuLab-Drucker suchen",
+    "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.": "Lokale BambuLab-SSDP/UDP-Ankündigungen empfangen. Der LAN-Zugangscode wird weder ausgelesen noch erraten.",
+    "Last network scan": "Ergebnis der letzten Netzwerksuche"
 }
