@@ -15,5 +15,6 @@
     "Seconds between data polling": "Sekunden zwischen der Datenabfrage",
     "Serial number of device": "Seriennummer des Gerätes",
     "Upload g-code file": "G-Code-Datei hochladen",
-    "X1-Series": "X1-Serie"
+    "X1-Series": "X1-Serie",
+    "Printer name": "Druckername"
 }

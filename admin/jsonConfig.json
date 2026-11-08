@@ -9,17 +9,10 @@
             "titleAttribute": "name",
             "items": [
                 {
-                    "attr": "id",
-                    "type": "text",
-                    "title": "Object ID",
-                    "width": "15%",
-                    "default": ""
-                },
-                {
                     "attr": "name",
                     "type": "text",
-                    "title": "Display name",
-                    "width": "15%",
+                    "title": "Printer name",
+                    "width": "20%",
                     "default": ""
                 },
                 {

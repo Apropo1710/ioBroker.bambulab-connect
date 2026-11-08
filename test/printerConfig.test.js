@@ -82,6 +82,20 @@ describe('printerConfig', () => {
         expect(printer.id).to.equal('Etage_2_Drucker');
     });
 
+
+    it('derives the object ID from the printer name without requiring a separate ID', () => {
+        const printer = normalizePrinter({
+            name: 'X1 Carbon',
+            id: 'old_legacy_id',
+            host: '192.168.1.10',
+            Password: 'token',
+            serial: 'SERIAL',
+        });
+
+        expect(printer.id).to.equal('X1_Carbon');
+        expect(printer.name).to.equal('X1 Carbon');
+    });
+
     it('reserves the adapter-level info namespace for printer roots', () => {
         const printers = ensureUniqueIds([{ id: 'info' }, { id: 'INFO' }, { id: 'A1' }]);
         expect(printers.map(printer => printer.id)).to.deep.equal(['info_2', 'INFO_3', 'A1']);
