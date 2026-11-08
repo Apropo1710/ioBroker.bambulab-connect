@@ -1070,19 +1070,19 @@ class BambulabConnect extends utils.Adapter {
             const knownSerials = new Set(
                 configuredPrinters
                     .map(item =>
-                    String(item.serial || '')
-                        .trim()
-                        .toUpperCase(),
-                )
+                        String(item.serial || '')
+                            .trim()
+                            .toUpperCase(),
+                    )
                     .filter(Boolean),
             );
             const knownNames = new Set(
                 configuredPrinters
                     .map(item =>
-                    String(item.name || '')
-                        .trim()
-                        .toLowerCase(),
-                )
+                        String(item.name || '')
+                            .trim()
+                            .toLowerCase(),
+                    )
                     .filter(Boolean),
             );
             const additions = [];
