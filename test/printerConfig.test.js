@@ -84,7 +84,7 @@ describe('printerConfig', () => {
 
     it('reserves the adapter-level info namespace for printer roots', () => {
         const printers = ensureUniqueIds([{ id: 'info' }, { id: 'INFO' }, { id: 'A1' }]);
-        expect(printers.map(printer => printer.id)).to.deep.equal(['info_2', 'INFO_2', 'A1']);
+        expect(printers.map(printer => printer.id)).to.deep.equal(['info_2', 'INFO_3', 'A1']);
     });
 
     it('generates unique case-insensitive IDs', () => {
