@@ -23,8 +23,7 @@
                 "padding": "10px 24px"
             },
             "xs": 12,
-            "sm": 12,
-            "reloadBrowser": true
+            "sm": 12
         },
         "printers": {
             "type": "table",
