@@ -4,7 +4,7 @@ const { expect } = require('chai');
 const { createAdminDiscoveryResponse } = require('../lib/adminDiscoveryResponse');
 
 describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 10.1.8)', () => {
-    it('returns native.printers and saveConfig in the shape consumed by ConfigSendto', () => {
+    it('returns native.printers without triggering an immediate config save', () => {
         const rows = [
             {
                 name: 'X1CC',
@@ -18,10 +18,10 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
 
         const response = createAdminDiscoveryResponse(rows);
 
-        expect(response).to.have.keys(['native', 'saveConfig']);
+        expect(response).to.have.keys(['native']);
         expect(response.native).to.have.keys(['printers']);
         expect(response.native.printers).to.deep.equal(rows);
-        expect(response.saveConfig).to.equal(true);
+        expect(response).not.to.have.property('saveConfig');
     });
 
     it('preserves existing rows and discovered rows in the returned table', () => {
