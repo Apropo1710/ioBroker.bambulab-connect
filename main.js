@@ -1169,12 +1169,7 @@ class BambulabConnect extends utils.Adapter {
                 this.log.info(
                     `Returning ${additions.length} discovered printer row(s) to Admin for configuration update.`,
                 );
-                this.sendTo(
-                    obj.from,
-                    obj.command,
-                    createAdminDiscoveryResponse(updatedNative.printers),
-                    obj.callback,
-                );
+                this.sendTo(obj.from, obj.command, createAdminDiscoveryResponse(updatedNative.printers), obj.callback);
                 return;
             }
 
