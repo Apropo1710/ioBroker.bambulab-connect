@@ -1170,9 +1170,9 @@ class BambulabConnect extends utils.Adapter {
             const response = {
                 native: updatedNative,
                 saveConfig: additions.length > 0,
-                // A full Admin refresh after the native config update ensures
-                // the printer table is rebuilt with the returned rows.
-                reloadBrowser: additions.length > 0,
+                // Do not reload the Admin page here: the useNative response
+                // populates the config form and saveConfig prompts the user.
+                // Reloading immediately discards the unsaved native update.
                 command: { command: 'message', message: this.lastDiscoveryResult },
             };
             this.log.debug(
