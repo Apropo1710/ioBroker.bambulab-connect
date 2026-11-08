@@ -1159,22 +1159,22 @@ class BambulabConnect extends utils.Adapter {
             };
 
             if (additions.length > 0) {
-                // jsonConfig's ConfigTable keeps its own local row state after mount.
-                // Returning native/useNative updates the parent data but does not
-                // reliably reinitialize that table. Persist the rows and request the
-                // documented Admin backend refresh, which reloads the GUI from the
-                // saved instance object.
-                await this.extendForeignObjectAsync(`system.adapter.${this.namespace}`, {
-                    native: { printers: updatedNative.printers },
-                });
+                // Admin's jsonConfig sendTo component supports useNative. It applies
+                // the returned native attributes to the live form, then calls the
+                // registered force-update handlers (including ConfigTable's handler).
+                // Return only the changed table attribute, so unrelated settings and
+                // protected credentials are not replaced by a stale full config.
                 this.config = updatedNative;
                 this.log.info(
-                    `Saved ${additions.length} discovered printer row(s); requesting Admin GUI refresh.`,
+                    `Returning ${additions.length} discovered printer row(s) to Admin for configuration update.`,
                 );
                 this.sendTo(
                     obj.from,
                     obj.command,
-                    { command: { command: 'refresh', fullRefresh: true } },
+                    {
+                        native: { printers: updatedNative.printers },
+                        saveConfig: true,
+                    },
                     obj.callback,
                 );
                 return;
