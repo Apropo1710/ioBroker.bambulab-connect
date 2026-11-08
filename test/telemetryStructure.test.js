@@ -32,16 +32,16 @@ describe('Printer telemetry folder organization', () => {
         expect(result.raw.unknown_field).to.equal(unknown);
     });
 
-    it('puts each connected AMS unit under a single units folder', () => {
+    it('moves the nested AMS units into one units folder and preserves metadata', () => {
         const units = [
             { ams_id: 0, tray: [{ id: 0, tray_type: 'PLA' }, { id: 1 }, { id: 2 }, { id: 3 }] },
             { ams_id: 1, tray: [{ id: 0 }, { id: 1 }, { id: 2 }, { id: 3 }] },
         ];
+        // Reflect the actual MQTT shape: print.ams contains metadata and
+        // print.ams.ams is the array of physical AMS modules.
         const result = organizeTelemetry({
             ams: {
-                ams: units,
-                ams_status: 1,
-                ams_exist_bits: '3',
+                ams: { ams: units, ams_status: 1, ams_exist_bits: '3' },
             },
             vt_tray: { tray_type: 'PETG' },
         });

@@ -143,6 +143,19 @@ class BambulabConnect extends utils.Adapter {
         }
 
         for (const printer of printers) {
+            // Remove the obsolete AMS -> ams subtree created by previous adapter
+            // versions. The new layout stores units at printer.ams.units.
+            // Only remove this legacy branch, never the whole AMS channel.
+            try {
+                const legacyAmsBranch = `${printer.id}.ams.ams`;
+                if (await this.getObjectAsync(legacyAmsBranch)) {
+                    this.log.info(`Removing obsolete AMS object branch for "${printer.name || printer.id}"`);
+                    await this.delObjectAsync(legacyAmsBranch, { recursive: true });
+                }
+            } catch (e) {
+                this.log.warn(`Could not remove obsolete AMS object branch for "${printer.name || printer.id}": ${e}`);
+            }
+
             const context = createPrinterContext(this, printer);
             this.printers.set(printer.id, context);
 
@@ -573,13 +586,10 @@ class BambulabConnect extends utils.Adapter {
                     this.lastHmsErrorCode = hmsErrorCodeJson;
                 }
 
-                // For some reason library does not convert the ams related bed_temp to number when value = 0
-                if (
-                    message.print.ams != null &&
-                    message.print.ams.ams_exist_bits != null &&
-                    message.print.ams.ams_exist_bits === '1'
-                ) {
-                    // Call function to handle states for AMS unit
+                // Process all reported AMS units. ams_exist_bits is a bitmask:
+                // with two connected AMS devices it is "3", not "1".
+                // The presence of the actual unit array is the reliable condition.
+                if (Array.isArray(message.print.ams?.ams)) {
                     message.print.ams.ams = this.handleAMSUnits(message);
                 }
             }
