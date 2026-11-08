@@ -20,6 +20,7 @@ const {
     getPrinterIdFromStateId,
     shutdownPrinterContext,
     markPrinterDisconnected,
+    getCachedHmsErrorJson,
 } = require('./lib/printerRuntime');
 
 const timeouts = {}; // Object array containing all running timers
@@ -493,45 +494,46 @@ class BambulabConnect extends utils.Adapter {
                 }
 
                 // Translate HMS Code & write to state
-                const hmsError = [];
+                let hmsErrorCodeJson;
                 if (message.print.hms != null) {
-                    for (const hms_code in message.print.hms) {
-                        // hmsErrors is an adapter-generated marker, not an HMS code entry.
-                        if (hms_code === 'hmsErrors') {
-                            continue;
-                        }
-                        const attr = convert.DecimalHexTwosComplement(message.print.hms[hms_code].attr);
-                        const code = convert.DecimalHexTwosComplement(message.print.hms[hms_code].code);
+                    hmsErrorCodeJson = getCachedHmsErrorJson(this, message.print.hms, language, hmsEntries => {
+                        const hmsError = [];
+                        for (const hms_code in hmsEntries) {
+                            const attr = convert.DecimalHexTwosComplement(hmsEntries[hms_code].attr);
+                            const code = convert.DecimalHexTwosComplement(hmsEntries[hms_code].code);
 
-                        let full_code = (attr + code).replace(/(.{4})/g, '$1_');
-                        full_code = full_code.substring(0, full_code.length - 1);
-                        const urlEN = `https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/${full_code}`;
+                            let full_code = (attr + code).replace(/(.{4})/g, '$1_');
+                            full_code = full_code.substring(0, full_code.length - 1);
+                            const urlEN = `https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/${full_code}`;
 
-                        let errorDesc = 'No description available in your language';
-                        if (
-                            errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()] != null &&
-                            errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()]['desc'] != null
-                        ) {
-                            errorDesc = errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()]['desc'];
+                            let errorDesc = 'No description available in your language';
+                            const translation = errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()];
+                            if (translation != null && translation['desc'] != null) {
+                                errorDesc = translation['desc'];
+                            }
+                            const errorMessageArray = {
+                                code: `HMS_${full_code}`,
+                                'url-EN': urlEN,
+                                description: errorDesc,
+                            };
+                            if (language.toUpperCase() !== 'EN') {
+                                errorMessageArray['url-local'] =
+                                    `https://wiki.bambulab.com/${language}/x1/troubleshooting/hmscode/${full_code}`;
+                            }
+                            hmsError.push(errorMessageArray);
                         }
-                        const errorMessageArray = { code: `HMS_${full_code}`, 'url-EN': urlEN, description: errorDesc };
-                        if (language.toUpperCase() !== 'EN') {
-                            errorMessageArray['url-local'] =
-                                `https://wiki.bambulab.com/${language}/x1/troubleshooting/hmscode/${full_code}`;
-                        }
-                        hmsError.push(errorMessageArray);
-                    }
+                        return hmsError;
+                    });
                     message.print.hms.hmsErrors = true;
                 } else {
                     message.print.hms = {
                         hmsErrorCount: 0,
                         hmsErrors: false,
                     };
+                    hmsErrorCodeJson = getCachedHmsErrorJson(this, null, language, () => []);
                 }
 
-                const hmsErrorCodeJson = JSON.stringify(hmsError);
-                // MQTT print reports often repeat HMS data unchanged; avoid
-                // writing the same translated error list to ioBroker each time.
+                // Avoid repeated ioBroker state writes for unchanged translated HMS data.
                 if (this.lastHmsErrorCode !== hmsErrorCodeJson) {
                     await this.setState(`${this.printerId}.hms.hmsErrorCode`, {
                         val: hmsErrorCodeJson,

@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext, markPrinterDisconnected } = require('../lib/printerRuntime');
+const {\n    createPrinterContext,\n    getPrinterIdFromStateId,\n    shutdownPrinterContext,\n    markPrinterDisconnected,\n    getCachedHmsErrorJson,\n} = require('../lib/printerRuntime');
 
 describe('printerRuntime', () => {
     it('creates independent runtime fields for each printer', () => {
