@@ -1,7 +1,7 @@
 'use strict';
 
 const { expect } = require('chai');
-const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext } = require('../lib/printerRuntime');
+const { createPrinterContext, getPrinterIdFromStateId, shutdownPrinterContext, markPrinterDisconnected } = require('../lib/printerRuntime');
 
 describe('printerRuntime', () => {
     it('creates independent runtime fields for each printer', () => {
@@ -127,6 +127,29 @@ describe('printerRuntime', () => {
         expect(second.clientConnection.connected).to.equal(true);
         expect(first.currentPrintingState).to.equal(null);
         expect(second.currentPrintingState).to.equal(3);
+    });
+
+    it('marks the runtime disconnected on MQTT close', () => {
+        const states = [];
+        const adapter = { config: {}, log: { warn: () => {} } };
+        const context = createPrinterContext(adapter, { id: 'P1', serial: 'S1' });
+        context.clientConnection.connected = true;
+        context.clientConnection.initiated = true;
+        markPrinterDisconnected(context, (...args) => states.push(args));
+        expect(context.clientConnection.connected).to.equal(false);
+        expect(context.clientConnection.connectError).to.equal(true);
+        expect(context.clientConnection.initiated).to.equal(false);
+        expect(states).to.deep.equal([['info.connection', false, true]]);
+    });
+
+    it('ignores MQTT close callbacks during shutdown', () => {
+        const states = [];
+        const context = createPrinterContext({ config: {}, log: { warn: () => {} } }, { id: 'P1', serial: 'S1' });
+        context.shuttingDown = true;
+        context.clientConnection.connected = true;
+        markPrinterDisconnected(context, (...args) => states.push(args));
+        expect(context.clientConnection.connected).to.equal(true);
+        expect(states).to.deep.equal([]);
     });
 
     it('routes fully qualified states to the configured printer ID', () => {
