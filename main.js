@@ -136,7 +136,9 @@ class BambulabConnect extends utils.Adapter {
                 legacyAccessToken = legacyAdapterObject.native.Password;
             }
         } catch (error) {
-            this.log.debug(`Could not read legacy bambulab.0 config for credential comparison: ${error.message || error}`);
+            this.log.debug(
+                `Could not read legacy bambulab.0 config for credential comparison: ${error.message || error}`,
+            );
         }
 
         for (const printer of printers) {
