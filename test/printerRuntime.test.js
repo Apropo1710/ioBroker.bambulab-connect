@@ -82,6 +82,53 @@ describe('printerRuntime', () => {
         expect(clearedCount).to.equal(1);
     });
 
+    it('shuts down one printer without affecting another runtime', () => {
+        const adapter = { config: {}, log: {} };
+        const first = createPrinterContext(adapter, { id: 'A1_Mini', serial: 'SERIAL_A' });
+        const second = createPrinterContext(adapter, { id: 'X1C', serial: 'SERIAL_B' });
+        const cleared = [];
+        const timers = {
+            A1_Mini: 'retry-a',
+            A1_Mini_dataPolling: 'poll-a',
+            X1C: 'retry-b',
+            X1C_dataPolling: 'poll-b',
+        };
+        let firstEnded = false;
+        let secondEnded = false;
+        first.client = {
+            removeAllListeners: () => {},
+            end: force => {
+                firstEnded = force;
+            },
+        };
+        second.client = {
+            removeAllListeners: () => {},
+            end: force => {
+                secondEnded = force;
+            },
+        };
+        first.clientConnection.connected = true;
+        second.clientConnection.connected = true;
+        first.currentPrintingState = 2;
+        second.currentPrintingState = 3;
+
+        shutdownPrinterContext(first, timers, timer => cleared.push(timer));
+
+        expect(cleared).to.deep.equal(['retry-a', 'poll-a']);
+        expect(timers.A1_Mini).to.equal(null);
+        expect(timers.A1_Mini_dataPolling).to.equal(null);
+        expect(timers.X1C).to.equal('retry-b');
+        expect(timers.X1C_dataPolling).to.equal('poll-b');
+        expect(firstEnded).to.equal(true);
+        expect(secondEnded).to.equal(false);
+        expect(first.client).to.equal(null);
+        expect(second.client).not.to.equal(null);
+        expect(first.clientConnection.connected).to.equal(false);
+        expect(second.clientConnection.connected).to.equal(true);
+        expect(first.currentPrintingState).to.equal(null);
+        expect(second.currentPrintingState).to.equal(3);
+    });
+
     it('routes fully qualified states to the configured printer ID', () => {
         const ids = ['A1_Mini', 'X1C', 'H2C'];
         expect(getPrinterIdFromStateId('bambulab-connect.0.A1_Mini.control.pause', 'bambulab-connect.0', ids))
