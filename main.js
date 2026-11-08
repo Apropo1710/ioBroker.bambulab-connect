@@ -1160,10 +1160,9 @@ class BambulabConnect extends utils.Adapter {
             const response = {
                 native: updatedNative,
                 saveConfig: additions.length > 0,
-                // Do not reload the Admin page here: the useNative response
-                // populates the config form and saveConfig prompts the user.
-                // Reloading immediately discards the unsaved native update.
-                command: { command: 'message', message: this.lastDiscoveryResult },
+                // Avoid response.command here: ioBroker Admin handles command responses
+                // before native/saveConfig and returns early, so the printer table
+                // would never receive the updated native configuration.
             };
             this.log.debug(
                 `Discovery response includes ${updatedNative.printers.length} printer configuration row(s).`,
