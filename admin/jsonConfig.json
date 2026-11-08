@@ -25,6 +25,574 @@
             "xs": 12,
             "sm": 12
         },
+        "discoveryResultsTitle": {
+            "type": "staticText",
+            "text": "Discovery completed: ${data.discoveryResults?.length || 0} BambuLab printer(s) found. Copy the fields below into the existing printer table. Access tokens are never discovered.",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults)",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryResultsEmpty": {
+            "type": "staticText",
+            "text": "No BambuLab printers found. Check that the printer and ioBroker are on the same LAN/VLAN and that UDP discovery traffic is allowed.",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length !== 0",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryResultsOverflow": {
+            "type": "staticText",
+            "text": "More than 8 printers were detected. The first 8 are displayed here.",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 8",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter0Title": {
+            "type": "staticText",
+            "text": "Printer 1: ${data.discoveryResults?.[0]?.name || data.discoveryResults?.[0]?.model || data.discoveryResults?.[0]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[0]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter0name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[0]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter0ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[0]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter0serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[0]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter0model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[0]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter0modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[0]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter0firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[0]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 0",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1Title": {
+            "type": "staticText",
+            "text": "Printer 2: ${data.discoveryResults?.[1]?.name || data.discoveryResults?.[1]?.model || data.discoveryResults?.[1]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[1]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter1name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[1]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[1]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[1]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[1]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[1]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter1firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[1]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 1",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2Title": {
+            "type": "staticText",
+            "text": "Printer 3: ${data.discoveryResults?.[2]?.name || data.discoveryResults?.[2]?.model || data.discoveryResults?.[2]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[2]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter2name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[2]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[2]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[2]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[2]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[2]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter2firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[2]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 2",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3Title": {
+            "type": "staticText",
+            "text": "Printer 4: ${data.discoveryResults?.[3]?.name || data.discoveryResults?.[3]?.model || data.discoveryResults?.[3]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[3]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter3name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[3]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[3]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[3]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[3]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[3]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter3firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[3]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 3",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4Title": {
+            "type": "staticText",
+            "text": "Printer 5: ${data.discoveryResults?.[4]?.name || data.discoveryResults?.[4]?.model || data.discoveryResults?.[4]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[4]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter4name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[4]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[4]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[4]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[4]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[4]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter4firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[4]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 4",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5Title": {
+            "type": "staticText",
+            "text": "Printer 6: ${data.discoveryResults?.[5]?.name || data.discoveryResults?.[5]?.model || data.discoveryResults?.[5]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[5]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter5name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[5]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[5]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[5]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[5]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[5]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter5firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[5]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 5",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6Title": {
+            "type": "staticText",
+            "text": "Printer 7: ${data.discoveryResults?.[6]?.name || data.discoveryResults?.[6]?.model || data.discoveryResults?.[6]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[6]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter6name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[6]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[6]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[6]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[6]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[6]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter6firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[6]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 6",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7Title": {
+            "type": "staticText",
+            "text": "Printer 8: ${data.discoveryResults?.[7]?.name || data.discoveryResults?.[7]?.model || data.discoveryResults?.[7]?.modelCode || 'BambuLab printer'}${data.discoveryResults?.[7]?.configured ? ' (already configured)' : ''}",
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 12
+        },
+        "discoveryPrinter7name": {
+            "type": "pattern",
+            "label": "Name",
+            "pattern": "${data.discoveryResults?.[7]?.name || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7ip": {
+            "type": "pattern",
+            "label": "IP address",
+            "pattern": "${data.discoveryResults?.[7]?.ip || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7serial": {
+            "type": "pattern",
+            "label": "Serial number",
+            "pattern": "${data.discoveryResults?.[7]?.serial || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7model": {
+            "type": "pattern",
+            "label": "Model",
+            "pattern": "${data.discoveryResults?.[7]?.model || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7modelCode": {
+            "type": "pattern",
+            "label": "Model code",
+            "pattern": "${data.discoveryResults?.[7]?.modelCode || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
+        "discoveryPrinter7firmware": {
+            "type": "pattern",
+            "label": "Firmware",
+            "pattern": "${data.discoveryResults?.[7]?.firmware || ''}",
+            "copyToClipboard": true,
+            "noTranslation": true,
+            "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 7",
+            "xs": 12,
+            "sm": 6
+        },
         "printers": {
             "type": "table",
             "label": "BambuLab printers",

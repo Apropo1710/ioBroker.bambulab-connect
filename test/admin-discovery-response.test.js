@@ -4,42 +4,70 @@ const { expect } = require('chai');
 const { createAdminDiscoveryResponse } = require('../lib/adminDiscoveryResponse');
 
 describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 10.1.8)', () => {
-    it('returns native.printers without triggering an immediate config save', () => {
-        const rows = [
+    it('returns display-only discovery data without touching printer rows or requesting a save', () => {
+        const printers = [
             {
-                name: 'X1CC',
-                host: '192.168.178.60',
+                name: 'X1 Carbon',
+                ip: '192.168.178.60',
                 serial: 'ABC123',
-                Password: '',
-                printerModel: 'X1 Carbon (X1C)',
-                requestInterval: 300,
+                model: 'X1C',
+                modelCode: 'BL-P001',
+                firmware: '01.08.00.00',
             },
         ];
 
-        const response = createAdminDiscoveryResponse(rows);
+        const response = createAdminDiscoveryResponse(printers);
 
         expect(response).to.have.keys(['native']);
-        expect(response.native).to.have.keys(['printers']);
-        expect(response.native.printers).to.deep.equal(rows);
+        expect(response.native).to.have.keys(['discoveryResults']);
+        expect(response.native.discoveryResults).to.deep.equal([
+            {
+                name: 'X1 Carbon',
+                ip: '192.168.178.60',
+                serial: 'ABC123',
+                model: 'X1C',
+                modelCode: 'BL-P001',
+                firmware: '01.08.00.00',
+                configured: false,
+            },
+        ]);
         expect(response).not.to.have.property('saveConfig');
+        expect(response.native).not.to.have.property('printers');
     });
 
-    it('preserves existing rows and discovered rows in the returned table', () => {
-        const existing = [{ name: 'Existing', serial: 'OLD', Password: 'secret' }];
-        const discovered = [{ name: 'New', serial: 'NEW', Password: '' }];
-        const response = createAdminDiscoveryResponse([...existing, ...discovered]);
+    it('marks existing printers as configured without returning their access tokens', () => {
+        const discovered = [
+            { name: 'Existing', ip: '192.168.1.10', serial: 'abc123', model: 'X1C', Password: 'broadcast-token' },
+            { name: 'New', ip: '192.168.1.11', serial: 'NEW456', model: 'P1S' },
+        ];
 
-        expect(response.native.printers).to.deep.equal([...existing, ...discovered]);
-        expect(response.native.printers[0].Password).to.equal('secret');
-        expect(response.native.printers[1].Password).to.equal('');
+        const response = createAdminDiscoveryResponse(discovered, new Set(['ABC123']));
+
+        expect(response.native.discoveryResults[0].configured).to.equal(true);
+        expect(response.native.discoveryResults[1].configured).to.equal(false);
+        expect(JSON.stringify(response)).not.to.include('broadcast-token');
+        expect(response.native.discoveryResults[0]).not.to.have.property('Password');
     });
 
-    it('does not mutate the supplied table array', () => {
-        const rows = [{ name: 'Printer', serial: 'SN' }];
-        const before = rows.map(row => ({ ...row }));
+    it('normalizes absent values to empty strings and handles empty discovery', () => {
+        expect(createAdminDiscoveryResponse([]).native.discoveryResults).to.deep.equal([]);
+        expect(createAdminDiscoveryResponse([{ ip: '10.0.0.2' }]).native.discoveryResults[0]).to.deep.equal({
+            name: '',
+            ip: '10.0.0.2',
+            serial: '',
+            model: '',
+            modelCode: '',
+            firmware: '',
+            configured: false,
+        });
+    });
 
-        createAdminDiscoveryResponse(rows);
+    it('does not mutate discovered printer records', () => {
+        const printers = [{ name: 'Printer', serial: 'SN', ip: '192.168.1.20' }];
+        const before = JSON.parse(JSON.stringify(printers));
 
-        expect(rows).to.deep.equal(before);
+        createAdminDiscoveryResponse(printers);
+
+        expect(printers).to.deep.equal(before);
     });
 });

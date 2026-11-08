@@ -1093,95 +1093,18 @@ class BambulabConnect extends utils.Adapter {
                     )
                     .filter(Boolean),
             );
-            const knownNames = new Set(
-                configuredPrinters
-                    .map(item =>
-                        String(item.name || '')
-                            .trim()
-                            .toLowerCase(),
-                    )
-                    .filter(Boolean),
-            );
-            const additions = [];
-            const discoveredSummary = [];
 
-            for (const printer of discovered) {
-                const modelLabel = printer.model || printer.modelCode || 'BambuLab printer';
-                const printerLabel = printer.name || modelLabel;
-                discoveredSummary.push(
-                    `${printerLabel} — ${printer.ip}` +
-                        `${printer.serial ? ` — S/N: ${printer.serial}` : ''}` +
-                        `${printer.modelCode ? ` — model code: ${printer.modelCode}` : ''}`,
-                );
+            // Discovery is display-only: do not append rows, alter adapter config,
+            // save settings, or send any access token back to Admin.
+            this.lastDiscoveryResult = discovered.length
+                ? `Found ${discovered.length} BambuLab printer(s). Discovery data is displayed separately; add printers manually and enter each access token yourself.`
+                : 'No BambuLab printer was detected. Check that the printer and ioBroker are on the same LAN/VLAN and that UDP discovery traffic is allowed.';
 
-                if (!printer.serial || knownSerials.has(printer.serial.toUpperCase())) {
-                    continue;
-                }
-
-                const serialSuffix = printer.serial.slice(-4);
-                let name = String(printer.name || `${modelLabel}_${serialSuffix}`).trim();
-                if (knownNames.has(name.toLowerCase())) {
-                    name = `${name}_${serialSuffix}`;
-                }
-                let suffix = 2;
-                const baseName = name;
-                while (knownNames.has(name.toLowerCase())) {
-                    name = `${baseName}_${suffix++}`;
-                }
-                knownNames.add(name.toLowerCase());
-                knownSerials.add(printer.serial.toUpperCase());
-
-                additions.push({
-                    name,
-                    host: printer.ip,
-                    serial: printer.serial,
-                    Password: '',
-                    printerModel: printer.model || '',
-                    requestInterval: 300,
-                });
-            }
-
-            if (!discovered.length) {
-                this.lastDiscoveryResult =
-                    'No BambuLab printer was detected. Check that the printer and ioBroker VM are on the same LAN/VLAN and that UDP discovery traffic is allowed. You can still enter a printer manually.';
-            } else {
-                this.lastDiscoveryResult =
-                    `Found ${discovered.length} BambuLab printer(s):\n${discoveredSummary.join('\n')}\n\n` +
-                    `Added ${additions.length} new printer row(s). Access codes are not broadcast and must be entered manually.`;
-            }
-
-            this.log.info(
-                `Network discovery completed: ${discovered.length} printer(s) found, ` +
-                    `${additions.length} new configuration row(s).`,
-            );
-            const updatedNative = {
-                ...currentConfig,
-                printers: [...configuredPrinters, ...additions],
-            };
-
-            if (additions.length > 0) {
-                // Admin's jsonConfig sendTo component supports useNative. It applies
-                // the returned native attributes to the live form, then calls the
-                // registered force-update handlers (including ConfigTable's handler).
-                // Return only the changed table attribute, so unrelated settings and
-                // protected credentials are not replaced by a stale full config.
-                this.config = updatedNative;
-                this.log.info(
-                    `Returning ${additions.length} discovered printer row(s) to Admin for configuration update.`,
-                );
-                this.sendTo(obj.from, obj.command, createAdminDiscoveryResponse(updatedNative.printers), obj.callback);
-                return;
-            }
-
-            this.log.debug(
-                `Discovery found no new printers; existing configuration remains unchanged (${updatedNative.printers.length} row(s)).`,
-            );
+            this.log.info(`Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`);
             this.sendTo(
                 obj.from,
                 obj.command,
-                {
-                    result: `Found ${discovered.length} printer(s), but all are already configured.`,
-                },
+                createAdminDiscoveryResponse(discovered, knownSerials),
                 obj.callback,
             );
         } catch (error) {
