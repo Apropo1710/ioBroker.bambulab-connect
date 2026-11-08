@@ -1170,7 +1170,7 @@ class BambulabConnect extends utils.Adapter {
                 this.log.info(
                     `Saved ${additions.length} discovered printer row(s); requesting Admin instance-config refresh.`,
                 );
-                this.sendTo(obj.from, obj.command, { command: { command: 'refresh' } }, obj.callback);
+                this.sendTo(obj.from, obj.command, { reloadBrowser: true }, obj.callback);
                 return;
             }
 
