@@ -83,7 +83,13 @@ class BambulabConnect extends utils.Adapter {
             });
             await this.extendObjectAsync('discovery.resultsData', {
                 type: 'state',
-                common: { name: 'Printer search results data (JSON)', type: 'string', read: true, write: false, def: '' },
+                common: {
+                    name: 'Printer search results data (JSON)',
+                    type: 'string',
+                    read: true,
+                    write: false,
+                    def: '',
+                },
                 native: {},
             });
             await this.extendObjectAsync(DISCOVERY_STATE_ID, {
@@ -100,7 +106,11 @@ class BambulabConnect extends utils.Adapter {
             });
             const configuredSerials = new Set(
                 (Array.isArray(this.config.printers) ? this.config.printers : [])
-                    .map(printer => String(printer?.serial || '').trim().toUpperCase())
+                    .map(printer =>
+                        String(printer?.serial || '')
+                            .trim()
+                            .toUpperCase(),
+                    )
                     .filter(Boolean),
             );
             const cached = await this.getStateAsync('discovery.resultsData');
@@ -108,7 +118,11 @@ class BambulabConnect extends utils.Adapter {
                 try {
                     const data = JSON.parse(cached.val);
                     const scannedAt = data.scannedAt ? new Date(data.scannedAt) : new Date();
-                    await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(data.printers || [], configuredSerials, language, scannedAt), true);
+                    await this.setState(
+                        DISCOVERY_STATE_ID,
+                        createDiscoveryHtml(data.printers || [], configuredSerials, language, scannedAt),
+                        true,
+                    );
                 } catch (error) {
                     this.log.warn(`Could not restore cached printer discovery results: ${error.message || error}`);
                 }
@@ -1102,7 +1116,9 @@ class BambulabConnect extends utils.Adapter {
             }
             await this.setState('discovery.resultsData', '', true);
             await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
-            if (obj.callback) this.sendTo(obj.from, obj.command, {}, obj.callback);
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, {}, obj.callback);
+            }
             return;
         }
 
@@ -1184,8 +1200,16 @@ class BambulabConnect extends utils.Adapter {
                 // keep English
             }
             const scannedAt = new Date();
-            await this.setState('discovery.resultsData', JSON.stringify({ printers: discovered, scannedAt: scannedAt.toISOString() }), true);
-            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(discovered, knownSerials, language, scannedAt), true);
+            await this.setState(
+                'discovery.resultsData',
+                JSON.stringify({ printers: discovered, scannedAt: scannedAt.toISOString() }),
+                true,
+            );
+            await this.setState(
+                DISCOVERY_STATE_ID,
+                createDiscoveryHtml(discovered, knownSerials, language, scannedAt),
+                true,
+            );
             const discoveryResponse = createAdminDiscoveryResponse();
             this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {
