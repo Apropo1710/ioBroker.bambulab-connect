@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const { createAdminDiscoveryResponse } = require('../lib/adminDiscoveryResponse');
 
-describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 10.1.8)', () => {
+describe('Admin printer discovery response contract (transient json-config data)', () => {
     it('returns display-only discovery data without touching printer rows or requesting a save', () => {
         const printers = [
             {
@@ -17,8 +17,8 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
         const response = createAdminDiscoveryResponse(printers);
 
         expect(response).to.have.keys(['native']);
-        expect(response.native).to.have.keys(['discoveryResults']);
-        expect(response.native.discoveryResults).to.deep.equal([
+        expect(response.native).to.have.keys(['_discoveryResults']);
+        expect(response.native._discoveryResults).to.deep.equal([
             {
                 name: 'X1 Carbon',
                 ip: '192.168.178.60',
@@ -39,15 +39,15 @@ describe('Admin printer discovery response contract (Admin 8.3.5 / json-config 1
 
         const response = createAdminDiscoveryResponse(discovered, new Set(['ABC123']));
 
-        expect(response.native.discoveryResults[0].configured).to.equal(true);
-        expect(response.native.discoveryResults[1].configured).to.equal(false);
+        expect(response.native._discoveryResults[0].configured).to.equal(true);
+        expect(response.native._discoveryResults[1].configured).to.equal(false);
         expect(JSON.stringify(response)).not.to.include('broadcast-token');
-        expect(response.native.discoveryResults[0]).not.to.have.property('Password');
+        expect(response.native._discoveryResults[0]).not.to.have.property('Password');
     });
 
     it('normalizes absent values to empty strings and handles empty discovery', () => {
-        expect(createAdminDiscoveryResponse([]).native.discoveryResults).to.deep.equal([]);
-        expect(createAdminDiscoveryResponse([{ ip: '10.0.0.2' }]).native.discoveryResults[0]).to.deep.equal({
+        expect(createAdminDiscoveryResponse([]).native._discoveryResults).to.deep.equal([]);
+        expect(createAdminDiscoveryResponse([{ ip: '10.0.0.2' }]).native._discoveryResults[0]).to.deep.equal({
             name: '',
             ip: '10.0.0.2',
             serial: '',
