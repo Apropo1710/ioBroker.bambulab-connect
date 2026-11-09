@@ -309,7 +309,7 @@ class BambulabConnect extends utils.Adapter {
             // Only log connection attempt if we haven't shown the reconnect message yet
             if (!this.clientConnection.reconnectMessageShown) {
                 if (this.clientConnection.connectError) {
-                    this.log.info(
+                    this.log.debug(
                         `Attempting to reconnect to printer - will retry automatically every 30 seconds until connection is restored`,
                     );
                     this.clientConnection.reconnectMessageShown = true;
@@ -446,7 +446,11 @@ class BambulabConnect extends utils.Adapter {
                 if (this.client !== client || this.shuttingDown) {
                     return;
                 }
-                if (!this.clientConnection.connectError) {
+                // A keepalive timeout is the normal MQTT symptom when a printer is
+                // intentionally powered off. The disconnect warning below is sufficient.
+                const errorMessage = error && error.message ? error.message : String(error);
+                const isKeepaliveTimeout = /keepalive timeout/i.test(errorMessage);
+                if (!this.clientConnection.connectError && !isKeepaliveTimeout) {
                     this.log.error(`Connection issue occurred: ${error} - printer may be powered off or unreachable`);
                 }
                 // Close MQTT connection
