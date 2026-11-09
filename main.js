@@ -18,7 +18,11 @@ const convert = require('./lib/converter'); // Load converter functions
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
 const { compareCredentialValues } = require('./lib/credentialDiagnostics');
-const { createAdminDiscoveryResponse } = require('./lib/adminDiscoveryResponse');
+const {
+    DISCOVERY_STATE_ID,
+    createAdminDiscoveryResponse,
+    createDiscoveryHtml,
+} = require('./lib/adminDiscoveryResponse');
 const {
     createPrinterContext,
     getPrinterIdFromStateId,
@@ -66,12 +70,45 @@ class BambulabConnect extends utils.Adapter {
     /**
      * Is called when databases are connected and adapter received configuration.
      */
+    /**
+     * Create the state that holds printer search results for Admin.
+     * This runs before any printer is configured, so discovery can be used to add the first printer.
+     */
+    async setupDiscoveryState() {
+        try {
+            await this.extendObjectAsync('discovery', {
+                type: 'channel',
+                common: { name: 'Printer search' },
+                native: {},
+            });
+            await this.extendObjectAsync(DISCOVERY_STATE_ID, {
+                type: 'state',
+                common: {
+                    name: 'Printer search results (HTML, for the Admin configuration)',
+                    type: 'string',
+                    role: 'html',
+                    read: true,
+                    write: false,
+                    def: '',
+                },
+                native: {},
+            });
+            const current = await this.getStateAsync(DISCOVERY_STATE_ID);
+            if (!current || !current.val) {
+                await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+            }
+        } catch (error) {
+            this.log.warn(`Could not prepare the printer search result state: ${error.message || error}`);
+        }
+    }
+
     async onReady() {
         const sys_conf = await this.getForeignObjectAsync('system.config');
         if (sys_conf && sys_conf.common.language) {
             language = sys_conf.common.language;
         }
 
+        await this.setupDiscoveryState();
         await this.setState('info.connection', false, true);
         await this.loadHMSErrorCodeTranslations();
 
@@ -1111,7 +1148,8 @@ class BambulabConnect extends utils.Adapter {
             } catch {
                 // keep English
             }
-            const discoveryResponse = createAdminDiscoveryResponse(discovered, knownSerials, language);
+            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(discovered, knownSerials, language), true);
+            const discoveryResponse = createAdminDiscoveryResponse();
             this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;

@@ -4,7 +4,7 @@
     "items": {
         "discoveryIntro": {
             "type": "staticText",
-            "text": "<div style=\"background:#eaf3fb;border-left:4px solid #1976d2;padding:10px 12px;border-radius:4px;\">Find BambuLab printers automatically on your local network. The results are shown in a dialog and do not change your configuration. Copy the values into the printer table below and enter each Access Token manually.</div>",
+            "text": "<div style=\"background:#eaf3fb;border-left:4px solid #1976d2;padding:10px 12px;border-radius:4px;\">Find BambuLab printers automatically on your local network. The results appear below the button and do not change your configuration. Click a value to select it, copy it and paste it into a new row of the printer table and enter each Access Token manually.</div>",
             "format": "html"
         },
         "discoverPrinters": {
@@ -29,6 +29,13 @@
             "sm": 6,
             "md": 4,
             "doNotSave": false
+        },
+        "_discoveryResults": {
+            "type": "state",
+            "oid": "discovery.results",
+            "control": "html",
+            "xs": 12,
+            "sm": 12
         },
         "configuredPrintersDivider": {
             "type": "divider",
