@@ -21,7 +21,7 @@
     "Search for BambuLab printers": "BambuLab-Drucker suchen",
     "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN access code.": "Lokale BambuLab-SSDP/UDP-Ankündigungen empfangen. Der LAN-Zugangscode wird weder ausgelesen noch erraten.",
     "Last network scan": "Ergebnis der letzten Netzwerksuche",
-    "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually.": "BambuLab-Drucker automatisch im lokalen Netzwerk suchen. Bitte vor dem Scan die aktuellen Einstellungen speichern. Gefundene Drucker werden ohne Access Token zur Tabelle hinzugefügt; den Access Token bitte manuell eintragen.",
+    "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually.": "BambuLab-Drucker automatisch im lokalen Netzwerk suchen. Bitte vor dem Scan die aktuellen Einstellungen speichern. Gefundene Drucker werden ohne Access Token zur Tabelle hinzugefügt. Den Access Token bitte manuell eintragen.",
     "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN Access Token.": "Auf lokale BambuLab-SSDP/UDP-Ankündigungen warten. Der LAN Access Token wird nicht ausgelesen oder erraten.",
     "Discovery completed.": "Suche abgeschlossen.",
     "Printers found": "Gefundene Drucker",
@@ -52,5 +52,7 @@
     "Printer 5": "Drucker 5",
     "Printer 6": "Drucker 6",
     "Printer 7": "Drucker 7",
-    "Printer 8": "Drucker 8"
+    "Printer 8": "Drucker 8",
+    "Search printers": "Drucker suchen",
+    "Configured printers": "Konfigurierte Drucker"
 }

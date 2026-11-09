@@ -4,12 +4,13 @@
     "items": {
         "discoveryIntro": {
             "type": "staticText",
-            "text": "Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually."
+            "text": "<div style=\"background:#eaf3fb;border-left:4px solid #1976d2;padding:10px 12px;border-radius:4px;\">Find BambuLab printers automatically on your local network. Save your current settings before scanning. Detected printers are added to the table without an Access Token; enter each Access Token manually.</div>",
+            "format": "html"
         },
         "discoverPrinters": {
             "type": "sendTo",
             "command": "discoverPrinters",
-            "label": "Search for BambuLab printers",
+            "label": "Search printers",
             "help": "Listen for local BambuLab SSDP/UDP announcements. This does not read or guess the LAN Access Token.",
             "showProcess": true,
             "timeout": 45000,
@@ -18,11 +19,12 @@
             "variant": "contained",
             "controlStyle": {
                 "fontWeight": "bold",
-                "fontSize": "1rem",
-                "minHeight": "48px",
-                "padding": "10px 20px",
+                "fontSize": "0.875rem",
+                "minHeight": "40px",
+                "padding": "6px 12px",
                 "backgroundColor": "#1976d2",
-                "color": "#ffffff"
+                "color": "#ffffff",
+                "whiteSpace": "nowrap"
             },
             "xs": 6,
             "sm": 6,
@@ -510,6 +512,16 @@
             "color": "primary",
             "hidden": "!Array.isArray(data.discoveryResults) || data.discoveryResults.length <= 8"
         },
+        "configuredPrintersDivider": {
+            "type": "divider",
+            "height": 3,
+            "color": "primary"
+        },
+        "configuredPrintersHeader": {
+            "type": "header",
+            "text": "Configured printers",
+            "size": 3
+        },
         "printers": {
             "type": "table",
             "label": "BambuLab printers",
@@ -623,18 +635,6 @@
                     "max": 36000
                 }
             ]
-        },
-        "getDataFiles": {
-            "newLine": true,
-            "type": "fileSelector",
-            "upload": "/",
-            "label": "Upload g-code file",
-            "help": "Select a file to upload to the ioBroker file storage.",
-            "xs": 12,
-            "sm": 12,
-            "md": 6,
-            "lg": 4,
-            "xl": 4
         }
     }
 }
