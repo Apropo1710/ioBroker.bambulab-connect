@@ -1,7 +1,7 @@
 {
     "common": {
         "name": "bambulab-connect",
-        "version": "0.4.5",
+        "version": "0.4.6",
         "news": {
             "0.4.3": {
                 "en": "🛠️ Improved error messages when the printer is offline or unreachable.\n🖨️ Added HD2 printer to the selection menu for easier access (#142)\n🔧 Resolved multiple type definition issues (#203, #202, #201, #200, #199, #198)\n⚙️ Implemented a buffer system to reduce CPU usage and improve performance (#145)\n🔄 Fixed type conversion errors by replacing deprecated 'tonumber' with TOINTEGER/TOFLOAT (#197)\n📊 Added missing state attributes for HD2 printer during printing (height, platform, tool, mapping) (#194)",
@@ -93,6 +93,10 @@
                 "pl": "Poprawiono wyświetlanie wyników wyszukiwania drukarek bezpośrednio w Admin. Dodano oznaczenie wersji dla kompilacji testowej.",
                 "uk": "Виправлено відображення результатів пошуку принтерів безпосередньо в Admin. Додано маркер версії для тестової збірки.",
                 "zh-cn": "修复了在 Admin 中直接显示打印机搜索结果的问题。为测试版本添加了版本标记。"
+            },
+            "0.4.6": {
+                "en": "Discovery results now hide printers after they are configured and can be cleared manually.",
+                "de": "Suchergebnisse verschwinden nach dem Konfigurieren. Suchergebnisse können manuell gelöscht werden."
             }
         },
         "titleLang": {

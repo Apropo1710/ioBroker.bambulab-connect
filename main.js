@@ -81,6 +81,11 @@ class BambulabConnect extends utils.Adapter {
                 common: { name: 'Printer search' },
                 native: {},
             });
+            await this.extendObjectAsync('discovery.resultsData', {
+                type: 'state',
+                common: { name: 'Printer search results data (JSON)', type: 'string', read: true, write: false, def: '' },
+                native: {},
+            });
             await this.extendObjectAsync(DISCOVERY_STATE_ID, {
                 type: 'state',
                 common: {
@@ -93,9 +98,25 @@ class BambulabConnect extends utils.Adapter {
                 },
                 native: {},
             });
-            const current = await this.getStateAsync(DISCOVERY_STATE_ID);
-            if (!current || !current.val) {
-                await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+            const configuredSerials = new Set(
+                (Array.isArray(this.config.printers) ? this.config.printers : [])
+                    .map(printer => String(printer?.serial || '').trim().toUpperCase())
+                    .filter(Boolean),
+            );
+            const cached = await this.getStateAsync('discovery.resultsData');
+            if (cached?.val) {
+                try {
+                    const data = JSON.parse(cached.val);
+                    const scannedAt = data.scannedAt ? new Date(data.scannedAt) : new Date();
+                    await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(data.printers || [], configuredSerials, language, scannedAt), true);
+                } catch (error) {
+                    this.log.warn(`Could not restore cached printer discovery results: ${error.message || error}`);
+                }
+            } else {
+                const current = await this.getStateAsync(DISCOVERY_STATE_ID);
+                if (!current || !current.val) {
+                    await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+                }
             }
         } catch (error) {
             this.log.warn(`Could not prepare the printer search result state: ${error.message || error}`);
@@ -1071,6 +1092,20 @@ class BambulabConnect extends utils.Adapter {
             `Admin message received: command=${obj.command}, from=${obj.from || 'unknown'}, callback=${Boolean(obj.callback)}`,
         );
 
+        if (obj.command === 'clearDiscoveryResults') {
+            let language = 'en';
+            try {
+                const systemConfig = await this.getForeignObjectAsync('system.config');
+                language = systemConfig?.common?.language || 'en';
+            } catch {
+                // keep English
+            }
+            await this.setState('discovery.resultsData', '', true);
+            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+            if (obj.callback) this.sendTo(obj.from, obj.command, {}, obj.callback);
+            return;
+        }
+
         if (!obj.callback) {
             this.log.warn(`Admin command "${obj.command}" arrived without a callback; cannot return a response.`);
             return;
@@ -1148,7 +1183,9 @@ class BambulabConnect extends utils.Adapter {
             } catch {
                 // keep English
             }
-            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(discovered, knownSerials, language), true);
+            const scannedAt = new Date();
+            await this.setState('discovery.resultsData', JSON.stringify({ printers: discovered, scannedAt: scannedAt.toISOString() }), true);
+            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(discovered, knownSerials, language, scannedAt), true);
             const discoveryResponse = createAdminDiscoveryResponse();
             this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {

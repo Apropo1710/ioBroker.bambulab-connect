@@ -30,6 +30,23 @@
             "md": 4,
             "doNotSave": false
         },
+        "discoveryResultsHeader": {
+            "type": "header",
+            "text": "Not yet configured printers",
+            "size": 3
+        },
+        "clearDiscoveryResults": {
+            "type": "sendTo",
+            "command": "clearDiscoveryResults",
+            "label": "Clear search results",
+            "showProcess": false,
+            "icon": "delete",
+            "variant": "outlined",
+            "xs": 6,
+            "sm": 6,
+            "md": 4,
+            "doNotSave": true
+        },
         "_discoveryResults": {
             "type": "state",
             "oid": "discovery.results",
