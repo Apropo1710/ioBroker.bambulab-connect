@@ -56,7 +56,6 @@ class BambulabConnect extends utils.Adapter {
         this.printers = new Map();
         this.discoveryInProgress = false;
         this.lastDiscoveryResult = '';
-        this.lastDiscoveryData = [];
         this.on('ready', this.onReady.bind(this));
         this.on('message', this.onMessage.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
@@ -1040,27 +1039,6 @@ class BambulabConnect extends utils.Adapter {
             return;
         }
 
-        if (obj.command === 'getDiscoveryResults') {
-            const lines = this.lastDiscoveryData.length
-                ? this.lastDiscoveryData
-                      .map((printer, index) =>
-                          [
-                              `Printer ${index + 1}: ${printer.name || printer.model || printer.modelCode || 'BambuLab printer'}`,
-                              `Name: ${printer.name || ''}`,
-                              `IP address: ${printer.ip || ''}`,
-                              `Serial number: ${printer.serial || ''}`,
-                              `Model: ${printer.model || ''}`,
-                              `Model code: ${printer.modelCode || ''}`,
-                              `Firmware: ${printer.firmware || ''}`,
-                              printer.configured ? 'Already configured' : 'Not configured',
-                          ].join('\\n'),
-                      )
-                      .join('\\n\\n')
-                : 'No discovery results yet. Run the BambuLab printer search first.';
-            this.sendTo(obj.from, obj.command, lines, obj.callback);
-            return;
-        }
-
         if (obj.command !== 'discoverPrinters') {
             return;
         }
@@ -1127,7 +1105,6 @@ class BambulabConnect extends utils.Adapter {
                 `Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`,
             );
             const discoveryResponse = createAdminDiscoveryResponse(discovered, knownSerials);
-            this.lastDiscoveryData = discoveryResponse.native.discoveryResults;
             this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
