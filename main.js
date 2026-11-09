@@ -1104,7 +1104,14 @@ class BambulabConnect extends utils.Adapter {
             this.log.info(
                 `Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`,
             );
-            const discoveryResponse = createAdminDiscoveryResponse(discovered, knownSerials);
+            let language = 'en';
+            try {
+                const systemConfig = await this.getForeignObjectAsync('system.config');
+                language = systemConfig?.common?.language || 'en';
+            } catch {
+                // keep English
+            }
+            const discoveryResponse = createAdminDiscoveryResponse(discovered, knownSerials, language);
             this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
         } catch (error) {
             this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;

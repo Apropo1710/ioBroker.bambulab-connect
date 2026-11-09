@@ -54,5 +54,6 @@
     "Printer 7": "Drucker 7",
     "Printer 8": "Drucker 8",
     "Search printers": "Drucker suchen",
-    "Configured printers": "Konfigurierte Drucker"
+    "Configured printers": "Konfigurierte Drucker",
+    "Find BambuLab printers automatically on your local network. The results are shown in a dialog and do not change your configuration. Copy the values into the printer table below and enter each Access Token manually.": "Finde BambuLab-Drucker automatisch in deinem lokalen Netzwerk. Die Ergebnisse erscheinen in einem Dialog und ändern deine Konfiguration nicht. Kopiere die Werte in die Druckertabelle unten und trage jeden Access Token manuell ein."
 }
