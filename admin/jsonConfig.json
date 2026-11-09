@@ -28,19 +28,13 @@
             },
             "xs": 6,
             "sm": 6,
-            "md": 4
+            "md": 4,
+            "doNotSave": true
         },
         "discoveryResultsTitle": {
             "type": "staticText",
             "text": "Discovery completed.",
             "hidden": "!Array.isArray(data._discoveryResults)",
-            "xs": 12,
-            "sm": 12
-        },
-        "discoveryResultsCount": {
-            "type": "staticInfo",
-            "label": "Printers found",
-            "data": "${data._discoveryResults?.length || 0}",
             "xs": 12,
             "sm": 12
         },
