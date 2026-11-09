@@ -31,9 +31,8 @@ are migrated automatically if the new printer table is empty.
 The location of the API token and serial number depends on your printer model:
 
 ### A1/A1 mini Series
-1. Navigate to **Settings** → **Network** on your printer display
-2. Enable **"LAN Mode Only"** (nur Lan-Modus)
-3. Once enabled, IP address, access token, and serial number will be displayed
+1. Navigate to **Settings** → **Network / WLAN** on your printer display
+2. Look for the **Access Code** and serial number in the network settings. Menu labels may vary by firmware.
 
 ### P1S Series  
 1. Navigate to **Settings** → **Network** on your printer display

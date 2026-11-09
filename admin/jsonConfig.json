@@ -177,6 +177,11 @@
                     "max": 36000
                 }
             ]
+        },
+        "accessTokenHelp": {
+            "type": "staticText",
+            "text": "<div style=\"background:#f5f5f5;border-left:4px solid #1976d2;padding:10px 12px;border-radius:4px;\">\n<strong>Find the Access Token</strong><br>\nThe Access Token is the printer's local <strong>Access Code</strong>, not your Bambu Cloud account password. Depending on the model and firmware, find it here:<br><br>\n<strong>A1 / A1 mini / A2L:</strong> Settings → Network / WLAN<br>\n<strong>P1P / P1S / P2S:</strong> Settings → WLAN / Network<br>\n<strong>X1 / X1C / X1E / X2D:</strong> Settings → Network / WLAN<br>\n<strong>H2D / H2D Pro / H2C / H2S / H3C:</strong> Settings → LAN Only or Network<br><br>\nMenu names may vary by firmware. Look for “Access Code”. <em>LAN Only does not need to be enabled just to read the code.</em>\n</div>",
+            "format": "html"
         }
     }
 }

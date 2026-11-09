@@ -16,6 +16,12 @@ describe('State Attributes Type Compatibility', () => {
         expect(infoAttr.role).to.equal('state');
     });
 
+    it('defines metadata for printer name and firmware IDs', () => {
+        expect(stateAttr.name.type).to.equal('string');
+        expect(stateAttr.current_firmware_id.type).to.equal('number');
+        expect(stateAttr.current_run_firmware_id.type).to.equal('number');
+    });
+
     it('should have key state attributes for device functionality', () => {
         // Test some of the newly added state attributes
         expect(stateAttr.dry_time).to.exist;
