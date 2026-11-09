@@ -16,8 +16,7 @@ describe('Admin printer discovery response contract (transient json-config data)
 
         const response = createAdminDiscoveryResponse(printers);
 
-        expect(response).to.have.keys(['native', 'saveConfig']);
-        expect(response.saveConfig).to.equal(true);
+        expect(response).to.have.keys(['native']);
         expect(response.native).to.have.keys(['discoveryResults']);
         expect(response.native.discoveryResults).to.deep.equal([
             {

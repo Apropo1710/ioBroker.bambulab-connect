@@ -629,14 +629,6 @@
                     "max": 36000
                 }
             ]
-        },
-        "discoveryResultsCount": {
-            "type": "staticInfo",
-            "label": "Printers found",
-            "data": "${data.discoveryResults?.length || 0}",
-            "hidden": "!Array.isArray(data.discoveryResults)",
-            "xs": 12,
-            "sm": 12
         }
     }
 }
