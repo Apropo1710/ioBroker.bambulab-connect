@@ -1,6 +1,6 @@
 {
   "name": "iobroker.bambulab-connect",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "Bambulab Connect: Connects to Bambu Lab 3D printers to retrieve print data and control printer functions",
   "author": {
     "name": "Apropo1710"
