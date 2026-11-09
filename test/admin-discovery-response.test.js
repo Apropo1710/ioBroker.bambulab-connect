@@ -25,13 +25,14 @@ describe('Admin printer discovery (state based, no config change)', () => {
         }
     });
 
-    it('marks configured printers and never leaks access tokens', () => {
+    it('filters configured printers and never leaks access tokens', () => {
         const printers = [
             { name: 'Existing', ip: '192.168.1.10', serial: 'abc123', model: 'X1C', Password: 'broadcast-token' },
             { name: 'New', ip: '192.168.1.11', serial: 'NEW456', model: 'P1S' },
         ];
         const html = createDiscoveryHtml(printers, new Set(['ABC123']));
-        expect(html.match(/Already configured/g)).to.have.length(1);
+        expect(html).to.include('New');
+        expect(html).not.to.include('Existing');
         expect(html).not.to.include('broadcast-token');
     });
 
@@ -47,6 +48,9 @@ describe('Admin printer discovery (state based, no config change)', () => {
         expect(createDiscoveryHtml(null)).to.include('No search has been run yet.');
         expect(createDiscoveryHtml([])).to.include('No BambuLab printers found');
         expect(createDiscoveryHtml([{ ip: '10.0.0.2' }])).to.include('10.0.0.2');
+        expect(createDiscoveryHtml([{ serial: 'abc' }], new Set(['ABC']))).to.include(
+            'All discovered printers are already configured.',
+        );
     });
 
     it('supports German and English fallback', () => {
