@@ -38,12 +38,16 @@ describe('firmware update detection', () => {
             ams_firmware_update_details: JSON.stringify([
                 {
                     module: 'ams/0',
+                    module_type: 'AMS',
+                    module_id: 0,
                     update_available: true,
                     current_version: '00.00.06.44',
                     available_version: '00.00.06.49',
                 },
                 {
                     module: 'ams/1',
+                    module_type: 'AMS',
+                    module_id: 1,
                     update_available: false,
                     current_version: '00.00.06.49',
                     available_version: '00.00.06.49',
@@ -114,6 +118,8 @@ describe('firmware update detection', () => {
             ams_firmware_update_details: JSON.stringify([
                 {
                     module: 'ams/0',
+                    module_type: 'AMS',
+                    module_id: 0,
                     update_available: false,
                     current_version: '00.00.06.49',
                     available_version: '00.00.06.49',
