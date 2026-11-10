@@ -15,6 +15,7 @@ const { default: axios } = require('axios'); // Http request library
 const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
 const organizeTelemetry = require('./lib/telemetryStructure');
 const convert = require('./lib/converter'); // Load converter functions
+const deriveFirmwareUpdate = require('./lib/firmwareUpdate');
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
 const { compareCredentialValues } = require('./lib/credentialDiagnostics');
@@ -706,6 +707,16 @@ class BambulabConnect extends utils.Adapter {
             }
             if (typeof message.print.device?.nozzle?.tar_id === 'number') {
                 message.print.device.nozzle.tar_id = String(message.print.device.nozzle.tar_id);
+            }
+
+            // Derive an explicit OTA update indicator from the versions advertised by the printer.
+            // Do not infer availability from new_version_state alone: its numeric values are
+            // firmware-specific, while the OTA current/new version pair is directly comparable.
+            if (message.print.upgrade_state && typeof message.print.upgrade_state === 'object') {
+                const firmwareUpdate = deriveFirmwareUpdate(message.print.upgrade_state);
+                if (firmwareUpdate) {
+                    Object.assign(message.print.upgrade_state, firmwareUpdate);
+                }
             }
 
             // Explore JSON & create states
