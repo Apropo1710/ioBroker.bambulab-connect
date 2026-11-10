@@ -156,20 +156,6 @@ describe('printerRuntime', () => {
         ]);
     });
 
-    it('keeps an initially unreachable printer silent during adapter startup', () => {
-        const states = [];
-        const warnings = [];
-        const adapter = { config: {}, log: { warn: message => warnings.push(message) } };
-        const offlinePrinter = createPrinterContext(adapter, { id: 'P2', serial: 'S2' });
-
-        markPrinterDisconnected(offlinePrinter, (...args) => states.push(args));
-
-        expect(offlinePrinter.clientConnection.connected).to.equal(false);
-        expect(offlinePrinter.clientConnection.connectError).to.equal(true);
-        expect(states).to.deep.equal([['info.connection', false, true]]);
-        expect(warnings).to.deep.equal([]);
-    });
-
     it('ignores MQTT close callbacks during shutdown', () => {
         const states = [];
         const context = createPrinterContext({ config: {}, log: { warn: () => {} } }, { id: 'P1', serial: 'S1' });

@@ -443,18 +443,20 @@ class BambulabConnect extends utils.Adapter {
                 markPrinterDisconnected(this, this.setState.bind(this));
             });
 
-            client.on('error', () => {
+            client.on('error', error => {
                 if (this.client !== client || this.shuttingDown) {
                     return;
                 }
-                // A failed first connection is expected when a configured printer is
-                // switched off or temporarily unreachable. Only report a loss if this
-                // printer had an established connection before the error.
-                const wasConnected = this.clientConnection.connected;
-
+                // A keepalive timeout is the normal MQTT symptom when a printer is
+                // intentionally powered off. The disconnect warning below is sufficient.
+                const errorMessage = error && error.message ? error.message : String(error);
+                const isKeepaliveTimeout = /keepalive timeout/i.test(errorMessage);
+                if (!this.clientConnection.connectError && !isKeepaliveTimeout) {
+                    this.log.error(`Connection issue occurred: ${error} - printer may be powered off or unreachable`);
+                }
                 // Close MQTT connection
                 client.end();
-                if (wasConnected) {
+                if (this.clientConnection.connected) {
                     this.log.warn(
                         `Printer connection lost - this could be due to printer being powered off or network issues`,
                     );
