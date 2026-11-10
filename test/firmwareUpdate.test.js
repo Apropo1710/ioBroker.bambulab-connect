@@ -20,6 +20,57 @@ describe('firmware update detection', () => {
         });
     });
 
+    it('detects firmware updates for AMS modules independently of the printer OTA update', () => {
+        expect(
+            deriveFirmwareUpdate({
+                new_ver_list: [
+                    { name: 'ota', cur_ver: '01.09.00', new_ver: '01.09.00' },
+                    { name: 'ams/0', cur_ver: '00.00.06.44', new_ver: '00.00.06.49' },
+                    { name: 'ams/1', cur_ver: '00.00.06.49', new_ver: '00.00.06.49' },
+                ],
+            }),
+        ).to.deep.equal({
+            firmware_update_available: false,
+            firmware_current_version: '01.09.00',
+            firmware_available_version: '01.09.00',
+            ams_firmware_update_available: true,
+            ams_firmware_update_count: 1,
+            ams_firmware_update_details: JSON.stringify([
+                {
+                    module: 'ams/0',
+                    update_available: true,
+                    current_version: '00.00.06.44',
+                    available_version: '00.00.06.49',
+                },
+                {
+                    module: 'ams/1',
+                    update_available: false,
+                    current_version: '00.00.06.49',
+                    available_version: '00.00.06.49',
+                },
+            ]),
+        });
+    });
+
+    it('does not mark an AMS update as available when all AMS versions match', () => {
+        expect(
+            deriveFirmwareUpdate({
+                new_ver_list: [{ name: 'ams/0', cur_ver: '00.00.06.49', new_ver: '00.00.06.49' }],
+            }),
+        ).to.deep.equal({
+            ams_firmware_update_available: false,
+            ams_firmware_update_count: 0,
+            ams_firmware_update_details: JSON.stringify([
+                {
+                    module: 'ams/0',
+                    update_available: false,
+                    current_version: '00.00.06.49',
+                    available_version: '00.00.06.49',
+                },
+            ]),
+        });
+    });
+
     it('reports no update when the OTA version is already installed', () => {
         expect(
             deriveFirmwareUpdate({
