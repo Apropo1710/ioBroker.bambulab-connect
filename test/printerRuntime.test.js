@@ -135,17 +135,25 @@ describe('printerRuntime', () => {
         expect(second.currentPrintingState).to.equal(3);
     });
 
-    it('marks the runtime disconnected on MQTT close', () => {
+    it('logs a single warning for an offline transition and ignores repeated MQTT close events', () => {
         const states = [];
-        const adapter = { config: {}, log: { warn: () => {} } };
+        const warnings = [];
+        const adapter = { config: {}, log: { warn: message => warnings.push(message) } };
         const context = createPrinterContext(adapter, { id: 'P1', serial: 'S1' });
         context.clientConnection.connected = true;
         context.clientConnection.initiated = true;
         markPrinterDisconnected(context, (...args) => states.push(args));
+        markPrinterDisconnected(context, (...args) => states.push(args));
         expect(context.clientConnection.connected).to.equal(false);
         expect(context.clientConnection.connectError).to.equal(true);
         expect(context.clientConnection.initiated).to.equal(false);
-        expect(states).to.deep.equal([['info.connection', false, true]]);
+        expect(states).to.deep.equal([
+            ['info.connection', false, true],
+            ['info.connection', false, true],
+        ]);
+        expect(warnings).to.deep.equal([
+            'Printer connection lost - this could be due to printer being powered off or network issues',
+        ]);
     });
 
     it('ignores MQTT close callbacks during shutdown', () => {
