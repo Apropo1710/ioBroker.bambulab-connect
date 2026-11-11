@@ -138,8 +138,9 @@ describe('printerRuntime', () => {
     it('logs a single warning for an offline transition and ignores repeated MQTT close events', () => {
         const states = [];
         const warnings = [];
-        const adapter = { config: {}, log: { warn: message => warnings.push(message) } };
-        const context = createPrinterContext(adapter, { id: 'P1', serial: 'S1' });
+        const infos = [];
+        const adapter = { config: {}, log: { warn: message => warnings.push(message), info: message => infos.push(message) } };
+        const context = createPrinterContext(adapter, { id: 'P1', name: 'Bambu A1 Mini 2', serial: 'S1' });
         context.clientConnection.connected = true;
         context.clientConnection.initiated = true;
         markPrinterDisconnected(context, (...args) => states.push(args));
@@ -151,15 +152,16 @@ describe('printerRuntime', () => {
             ['info.connection', false, true],
             ['info.connection', false, true],
         ]);
-        expect(warnings).to.deep.equal([
-            'Printer connection lost - this could be due to printer being powered off or network issues',
+        expect(warnings).to.deep.equal([]);
+        expect(infos).to.deep.equal([
+            'Printer "Bambu A1 Mini 2" connection lost - printer may have been powered off or become unreachable',
         ]);
     });
 
     it('keeps an initially unreachable printer silent during adapter startup', () => {
         const states = [];
         const warnings = [];
-        const adapter = { config: {}, log: { warn: message => warnings.push(message) } };
+        const adapter = { config: {}, log: { warn: message => warnings.push(message), info: () => {} } };
         const offlinePrinter = createPrinterContext(adapter, { id: 'P2', serial: 'S2' });
 
         markPrinterDisconnected(offlinePrinter, (...args) => states.push(args));

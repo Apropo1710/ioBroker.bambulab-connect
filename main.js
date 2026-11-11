@@ -455,8 +455,8 @@ class BambulabConnect extends utils.Adapter {
                 // Close MQTT connection
                 client.end();
                 if (wasConnected) {
-                    this.log.warn(
-                        `Printer connection lost - this could be due to printer being powered off or network issues`,
+                    this.log.info(
+                        `Printer "${this.printerName}" connection lost - printer may have been powered off or become unreachable`,
                     );
                 }
                 this.clientConnection.connected = false;
