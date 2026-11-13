@@ -1,35 +1,38 @@
 <img src="admin/bambulab.png" alt="Logo" width="200"/>
 
-# ioBroker.bambulab
+# Bambulab Connect
 
-[![NPM version](https://img.shields.io/npm/v/iobroker.bambulab.svg)](https://www.npmjs.com/package/iobroker.bambulab)
-[![Downloads](https://img.shields.io/npm/dm/iobroker.bambulab.svg)](https://www.npmjs.com/package/iobroker.bambulab)
-![Number of Installations](https://iobroker.live/badges/bambulab-installed.svg)
-![Current version in stable repository](https://iobroker.live/badges/bambulab-stable.svg)
+[![Test and Release](https://github.com/Apropo1710/ioBroker.bambulab-connect/actions/workflows/test-and-release.yml/badge.svg)](https://github.com/Apropo1710/ioBroker.bambulab-connect/actions/workflows/test-and-release.yml)
 
-[![NPM](https://nodei.co/npm/iobroker.bambulab.png?downloads=true)](https://nodei.co/npm/iobroker.bambulab/)
+## Bambulab Connect – 3D-Printing adapter for ioBroker
 
-**Tests:** ![Test and Release](https://github.com/DrozmotiX/ioBroker.bambulab/workflows/Test%20and%20Release/badge.svg)
+## Project origin and license
 
-## Bambulab 3D-Printing adapter for ioBroker
+Bambulab Connect is a community-maintained derivative of the original [ioBroker.bambulab adapter by DrozmotiX](https://github.com/DrozmotiX/ioBroker.bambulab). The original project and its contributors are acknowledged; the MIT license and original copyright notice are retained in [`LICENSE`](LICENSE).
 
 ## Getting started
 
 With credits to [kmxak](https://forum.iobroker.net/user/kmxak), [djalexz](https://forum.iobroker.net/user/djalexz), all other involved and inspired by [this forum thread](https://forum.iobroker.net/topic/61585/bambu-lab-3d-drucker-mqtt-integration)
 this adapter integrates Bambulab 3D-Printers into ioBroker.
 
-Please provide your Printer IP-Address, API token and serial number in adapter settings;
-these are required for a local connection (no cloud involved) to your printer.
-These credentials are stored locally and not shared to third parties.
+You can use **Search for BambuLab printers** in the adapter settings to detect devices announced via local SSDP/UDP. Detected printers are added to the table automatically; their LAN access codes are not discoverable and must be entered manually. Save your current settings before starting a scan.
+
+Add one row per BambuLab printer in the adapter settings. Each row needs an object ID,
+display name (optional), IP address, access token, serial number and model. All printers
+can be managed in one adapter instance; their MQTT connections and state trees are isolated.
+The object ID should be a short, unique name such as `A1_Mini`, `X1C` or `H2C`.
+
+The adapter connects locally over MQTT (no cloud connection for printer data). Access tokens
+are stored using ioBroker's encrypted native configuration. Existing single-printer settings
+are migrated automatically if the new printer table is empty.
 
 ## Finding the API Token and Serial Number
 
 The location of the API token and serial number depends on your printer model:
 
 ### A1/A1 mini Series
-1. Navigate to **Settings** → **Network** on your printer display
-2. Enable **"LAN Mode Only"** (nur Lan-Modus)
-3. Once enabled, IP address, access token, and serial number will be displayed
+1. Navigate to **Settings** → **Network / WLAN** on your printer display
+2. Look for the **Access Code** and serial number in the network settings. Menu labels may vary by firmware.
 
 ### P1S Series  
 1. Navigate to **Settings** → **Network** on your printer display
@@ -41,16 +44,22 @@ The location of the API token and serial number depends on your printer model:
 2. The access token is directly visible in network settings
 3. Serial number can be found in the same menu or in device information
 
-**Note:** You must select your Printer model correctly in the adapter settings. Only the X1 series allows pushing of messages, P1x series needs to request by interval setting (default every 5 seconds)
+**Note:** You must select your Printer model correctly in the adapter settings. X1-family printers provide push updates. P1-series printers additionally use a conservative full refresh interval (minimum 300 seconds)
 
-## Supported models
-| Printer-Model | Status                  |
-|---------------|-------------------------|
-| AMS           | :white_check_mark:      |
-| A1            | :white_check_mark:      |
-| P1p           | :white_check_mark:      |
-| P1s           | :white_check_mark:      |
-| X1            | :white_check_mark:      |
+## Printer model compatibility
+
+The adapter uses the local MQTT interface shared by many Bambu Lab printers. Selecting a model enables the appropriate adapter profile; **a model appearing in the list does not by itself mean that every feature has been validated on that hardware**.
+
+| Model | Compatibility status |
+|---|---|
+| A1 mini, A1 | Existing A1-family profile; hardware verification still needed per model |
+| P1P, P1S | Existing P1 profile; polling is enabled |
+| X1, X1 Carbon (X1C), X1E | Existing X1-family profile |
+| H2D | Existing H2D-family profile |
+| A2L, P2S, X2D, H2D Pro, H2S, H2C, H3C | Newly selectable / experimental; not yet hardware-validated |
+
+The legacy series choices (A1-Series, H2D-Series, P1-Series, X1-Series) remain available for existing installations. H2C and H3C have multi-tool architectures; their tool/nozzle-specific telemetry and controls require dedicated protocol validation and must not be assumed to work merely because common MQTT status data is received.
+
 
 ## Supported commands
 | Command            | X1C                 | X1                  | P1P                      | P1S                      | A1                       |
@@ -72,9 +81,8 @@ The location of the API token and serial number depends on your printer model:
 [ ] Restructure/complete current control states in control folder
 [ ] Optimize state attributes definitions  
 
-## Support me
-If you like my work, please consider a personal donation  
-(this is a personal Donate link for DutchmanNL, no relation to the ioBroker Project !)  
+## Support the original adapter author
+The donation link below supports DutchmanNL, the original adapter author. It is not a donation link for the Bambulab Connect maintainer or the ioBroker project.  
 [![Donate](https://raw.githubusercontent.com/DrozmotiX/ioBroker.sourceanalytix/master/admin/button.png)](http://paypal.me/DutchmanNL)
 
 ## What is Sentry.io and what is reported to the servers of that company?
@@ -129,6 +137,7 @@ Older changes can be found at [CHANGELOG_OLD.md](CHANGELOG_OLD.md).
 MIT License
 
 Copyright (c) 2025-2026 DutchmanNL <oss@drozmotix.eu>
+Copyright (c) 2026 Apropo1710 (Bambulab Connect modifications)
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

@@ -1,12 +1,11 @@
 {
-  "name": "iobroker.bambulab",
-  "version": "0.4.3",
-  "description": "Connects to Bambulab 3d printers to retrieve data of current print and control main aspects",
+  "name": "iobroker.bambulab-connect",
+  "version": "0.4.10",
+  "description": "Bambulab Connect: Connects to Bambu Lab 3D printers to retrieve print data and control printer functions",
   "author": {
-    "name": "DutchmanNL",
-    "email": "oss@drozmotix.eu"
+    "name": "Apropo1710"
   },
-  "homepage": "https://github.com/DrozmotiX/ioBroker.bambulab",
+  "homepage": "https://github.com/Apropo1710/ioBroker.bambulab-connect",
   "license": "MIT",
   "keywords": [
     "bambulab",
@@ -15,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/DrozmotiX/ioBroker.bambulab.git"
+    "url": "https://github.com/Apropo1710/ioBroker.bambulab-connect.git"
   },
   "engines": {
     "node": ">= 22"
@@ -23,7 +22,6 @@
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.1",
     "axios": "^1.13.5",
-    "iobroker-jsonexplorer": "^0.2.2",
     "mqtt": "^5.15.0"
   },
   "devDependencies": {
@@ -51,7 +49,7 @@
   ],
   "scripts": {
     "statDev": "dev-server watch --noStart",
-    "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
+    "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
     "test:package": "mocha test/package --exit",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:js && npm run test:package",
@@ -62,7 +60,7 @@
     "release-dry": "release-script --all --dry"
   },
   "bugs": {
-    "url": "https://github.com/DrozmotiX/ioBroker.bambulab/issues"
+    "url": "https://github.com/Apropo1710/ioBroker.bambulab-connect/issues"
   },
   "readmeFilename": "README.md"
 }
