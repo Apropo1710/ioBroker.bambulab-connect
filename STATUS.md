@@ -1,5 +1,13 @@
 # Projektstatus – ioBroker BambuLab Connect
 
+## CI-Maßnahme – macOS vorübergehend pausiert (13.11.2026)
+- Build #176 (Run `43484902511`) auf `feature/multi-printer` vollständig erfolgreich: Lint, Ubuntu/Windows/macOS Node 22/24 grün.
+- Auf Nutzerwunsch wird macOS auf dem Entwicklungsbranch `feature/multi-printer` für einige Tage aus der Testmatrix genommen. Ubuntu und Windows mit Node 22/24 sowie Lint bleiben aktiv.
+- macOS ist nur vorübergehend pausiert, nicht dauerhaft aus der Plattformabdeckung gestrichen. Nach der Beobachtungsphase wieder aktivieren.
+- Die Änderung betrifft den Workflow-Stand dieses Entwicklungsbranches; `main` wird nicht verändert.
+- Keine Adapterlaufzeit- oder Druckerfunktion geändert.
+
+
 ## Geprüfter Gesamtstand – 13.11.2026 (vormittags, MEZ)
 - Maßgeblicher Branch: `main`, zuletzt geprüfter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**.
 - Der stabile Mehrdrucker-Stand ist bereits nach `main` übernommen; `feature/multi-printer` zeigt auf denselben Commit.
