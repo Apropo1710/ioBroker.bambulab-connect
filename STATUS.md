@@ -1,40 +1,48 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-**Stand: 09.11.2026**  
-**Adapterversion: 0.4.10**  
-**Status: Stabilitätsbeobachtung**
+**Stand: 13.11.2026**  
+**Adapterversion im Paket: 0.4.10**  
+**Aktueller Entwicklungsstand: `feature/multi-printer` (wird jetzt nach `main` übernommen)**  
+**Betriebsstatus: Nutzer bestätigt stabilen Betrieb mit drei Druckern**
 
-## Aktueller Stand
+## Projektziel und Herkunft
 
-Der Adapter läuft derzeit in Version **0.4.10**. Die bisher bekannten Probleme sind behoben; aktuell sind keine offenen Bugs bekannt.
+Eigenständiger ioBroker-Adapter für BambuLab-Drucker unter dem Repository und Projektnamen `Apropo1710/ioBroker.bambulab-connect`. Die ursprüngliche Herkunftsangabe und MIT-Lizenz bleiben erhalten.
 
-Erledigt:
-- Druckersuche (Discovery) funktioniert und zeigt die Ergebnisse korrekt an.
-- Admin-Problem mit „Verwerfen?“ / „Discard changes?“ behoben.
-- Gelber Instanzstatus bei ausgeschaltetem/offline Drucker behoben.
-- Die zuvor bekannten Probleme sind augenscheinlich gelöst.
+## Umgesetzte Funktionen und Korrekturen
 
-## Aktuelle Phase
+- Mehrdrucker-Unterstützung mit getrennten Laufzeit- und Verbindungszuständen je Drucker.
+- Fehlende State-Attributdefinitionen ergänzt; Firmware-Versionswerte bleiben Strings, damit führende Nullen erhalten bleiben.
+- Erwartete MQTT-Keepalive-/Offline-Ereignisse erzeugen keine unnötigen Fehler beim regulären Ausschalten.
+- Nicht erreichbare Drucker bleiben beim Adapterstart still; ein Drucker, der zuvor verbunden war und später die Verbindung verliert, wird separat behandelt.
+- Verbindungsverlust wird als Info statt Warnung protokolliert und nennt den jeweiligen Druckernamen.
+- Drucker-OTA-Firmwareupdates werden getrennt von AMS-Firmwareupdates erkannt.
+- AMS-Firmwareerkennung berücksichtigt die Bambu-Modulpräfixe `ams/`, `ams_f1/`, `n3f/` und `n3s/`; Details enthalten Modultyp und Modul-ID.
+- Die Rohdaten unter `mc_for_ams_firmware.firmware` werden nicht als Liste tatsächlich angeschlossener AMS-Geräte fehlinterpretiert.
 
-Der Adapter wird im laufenden Betrieb beobachtet.
+## Prüfung und Stabilität
 
-Ziele:
-- Stabilität prüfen
-- Auf neu auftretende Bugs achten
-- Auffälligkeiten sammeln und bei konkreten Fehlern gezielt untersuchen
+- Nutzer-Hardwaretest mit drei Druckern: nicht erreichbare Drucker bleiben beim Adapterstart still; erreichbare Drucker verbinden sich normal.
+- Nutzer bestätigt am 13.11.2026, dass der Adapter stabil läuft.
+- CI #161 (Startverhalten Offline-Drucker): erfolgreich.
+- CI #164 (AMS-Firmwareerkennung auf feature/multi-printer): erfolgreich.
+- CI #166 (Info-Log bei Verbindungsverlust): erfolgreich.
+- Die AMS-Firmwarezuordnung ist durch Regressionstests für die bekannten Modulpräfixe abgedeckt. Die vollständige Zuordnung mit realen AMS-Hardwarekombinationen bleibt bei Gelegenheit weiter zu beobachten.
+- CI-Ergebnisse sind keine vollständige Hardwarefreigabe; Hardwaretests werden separat dokumentiert.
 
-**Derzeit keine aktive Feature-Entwicklung und keine geplanten Änderungen**, solange kein neuer Fehler oder konkreter Änderungsbedarf auftritt.
+## Noch offene bzw. getrennte Arbeiten
 
-## Arbeitsregeln
+- CPU-Baseline und mögliche Optimierungen laufen auf dem separaten Branch `dev/bambulab-connect-cpu`; dieser Branch ist nicht Bestandteil der hier beschriebenen stabilen Mehrdrucker-Übernahme.
+- Weitere Firmware-/AMS-Beobachtungen nur anhand realer Gerätedaten ergänzen.
+- Nach der Übernahme nach `main` bleibt `main` der maßgebliche Haupt- und Installationsbranch; weitere Entwicklung erfolgt dort bzw. über darauf basierende Feature-Branches.
 
-- Keine bereits behobenen Probleme erneut als offen aufführen.
-- Änderungen bündeln; keine unnötigen Einzel-Builds, Commits oder Pushes.
-- Vor einem Push betroffene Dateien und Zusammenhänge prüfen und Tests durchführen, soweit möglich.
-- Erst nach einem sinnvollen Arbeitspaket committen und pushen.
-- Pro gebündeltem Stand einen CI-Lauf auslösen und währenddessen keine Folge-Commits pushen.
-- Erfolg nur nach tatsächlicher Prüfung melden.
-- CI, lokale Tests und Hardwaretests klar unterscheiden.
+## Verbindliche Entwicklungs- und Build-Regeln
 
-## Hinweis für Übergaben
-
-Dieser Status ist die maßgebliche Momentaufnahme vom **09.11.2026**. Bei jeder relevanten Statusänderung aktualisieren und mit neuem Datum versehen. Frühere Übergaben können überholt sein.
+1. Vor Änderungen diese STATUS.md und die betroffenen Quelldateien lesen.
+2. Zusammengehörige Änderungen bündeln; keine unnötigen Einzel-Builds, Commits oder Pushes.
+3. Vor Push alle betroffenen Dateien und Zusammenhänge prüfen; lokale Tests und statische Prüfungen ausführen, soweit möglich.
+4. Pro gebündeltem Stand einen CI-Lauf auslösen und währenddessen keine Folge-Commits pushen.
+5. CI-Erfolg, lokale Tests und Hardwaretests klar voneinander unterscheiden.
+6. Keine Installation empfehlen, solange der relevante Stand nicht ausreichend geprüft ist.
+7. Herkunftshinweis und MIT-Lizenz erhalten.
+8. Diese Datei nach jeder zusammenhängenden Änderung aktualisieren und bei Branch-Wechseln in den maßgeblichen Branch übernehmen.
