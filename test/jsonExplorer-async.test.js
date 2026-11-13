@@ -9,6 +9,7 @@ describe('Local jsonExplorer async traversal', () => {
     beforeEach(() => {
         writes.length = 0;
         mockAdapter = {
+            namespace: 'bambulab-connect.999',
             log: {
                 silly: () => {},
                 debug: () => {},

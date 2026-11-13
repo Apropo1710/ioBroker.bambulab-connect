@@ -39,6 +39,14 @@ describe('State Attributes Type Compatibility', () => {
         expect(stateAttr.color.type).to.equal('string');
     });
 
+    it('defines the exact filament backup attribute reported by BambuLab firmware', () => {
+        expect(stateAttr.filam_bak).to.exist;
+        expect(stateAttr.filam_bak.type).to.equal('string');
+        expect(stateAttr.filam_bak.role).to.equal('text');
+        // Retain compatibility with the previously introduced alias.
+        expect(stateAttr.filament_bak.type).to.equal('string');
+    });
+
     it('should define metadata for X1-series MQTT telemetry fields', () => {
         expect(stateAttr.print_time.type).to.equal('number');
         expect(stateAttr.rtt.type).to.equal('string');
