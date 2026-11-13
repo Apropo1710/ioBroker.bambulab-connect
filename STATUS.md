@@ -1,7 +1,7 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Geprüfter Gesamtstand – 13.11.2026, 10:xx MEZ
-- Maßgeblicher Branch: `main`, Head `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**.
+## Geprüfter Gesamtstand – 13.11.2026 (vormittags, MEZ)
+- Maßgeblicher Branch: `main`, zuletzt geprüfter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**.
 - Der stabile Mehrdrucker-Stand ist bereits nach `main` übernommen; `feature/multi-printer` zeigt auf denselben Commit.
 - GitHub Actions „Test and Release“ #171 (Run `43382009645`) auf `main`: **completed / success**. Zusatzlauf #172 auf `feature/multi-printer` ebenfalls erfolgreich.
 - Nutzer bestätigt stabilen Betrieb mit drei Druckern.
