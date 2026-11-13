@@ -9,38 +9,60 @@
 const utils = require('@iobroker/adapter-core');
 
 const mqtt = require('mqtt'); // MQTT request library
+const { discoverPrinters } = require('./lib/printerDiscovery');
 const { default: axios } = require('axios'); // Http request library
 
-const jsonExplorer = require('iobroker-jsonexplorer'); // Use jsonExplorer library
+const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplorer implementation
+const organizeTelemetry = require('./lib/telemetryStructure');
 const convert = require('./lib/converter'); // Load converter functions
+const deriveFirmwareUpdate = require('./lib/firmwareUpdate');
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
+const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
+const { compareCredentialValues } = require('./lib/credentialDiagnostics');
+const {
+    DISCOVERY_STATE_ID,
+    createAdminDiscoveryResponse,
+    createDiscoveryHtml,
+} = require('./lib/adminDiscoveryResponse');
+const {
+    createPrinterContext,
+    getPrinterIdFromStateId,
+    shutdownPrinterContext,
+    markPrinterDisconnected,
+    getCachedHmsErrorJson,
+} = require('./lib/printerRuntime');
 
-let client; // Memory to store client connection information
-const clientConnection = {
-    connected: false,
-    connectError: false,
-    initiated: false,
-    reconnectMessageShown: false, // Track if we've shown the reconnection message
-    messageBuffer: false, // Track if message buffer is active
-};
 const timeouts = {}; // Object array containing all running timers
 const errorCodesHMS = {}; // Object array of translated error codes
 let language = 'en'; // System language to handle error code translations, default EN
 
 // Array of G-code commands that should be blocked during printing for safety
 const blockedCommandsDuringPrinting = ['G0', 'G1', 'G28', 'G90', 'G91'];
-let currentPrintingState = null; // Track current printing state for safety checks
 
-class Bambulab extends utils.Adapter {
+class BambulabConnect extends utils.Adapter {
     /**
      * @param {Partial<utils.AdapterOptions>} [options] - Adapter configuration options
      */
     constructor(options) {
         super({
             ...options,
-            name: 'bambulab',
+            name: 'bambulab-connect',
         });
+        // Serialize MQTT report processing so rapid updates cannot race each other.
+        this.client = null;
+        this.clientConnection = {
+            connected: false,
+            connectError: false,
+            initiated: false,
+            reconnectMessageShown: false,
+        };
+        this.currentPrintingState = null;
+        this.messageQueue = Promise.resolve();
+        this.printers = new Map();
+        this.discoveryInProgress = false;
+        this.lastDiscoveryResult = '';
         this.on('ready', this.onReady.bind(this));
+        this.on('message', this.onMessage.bind(this));
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
         jsonExplorer.init(this, stateAttr);
@@ -49,23 +71,224 @@ class Bambulab extends utils.Adapter {
     /**
      * Is called when databases are connected and adapter received configuration.
      */
-    async onReady() {
-        // Initialize your adapter here
+    /**
+     * Create the state that holds printer search results for Admin.
+     * This runs before any printer is configured, so discovery can be used to add the first printer.
+     */
+    async setupDiscoveryState() {
+        try {
+            await this.extendObjectAsync('discovery', {
+                type: 'channel',
+                common: { name: 'Printer search' },
+                native: {},
+            });
+            await this.extendObjectAsync('discovery.resultsData', {
+                type: 'state',
+                common: {
+                    name: 'Printer search results data (JSON)',
+                    type: 'string',
+                    read: true,
+                    write: false,
+                    def: '',
+                },
+                native: {},
+            });
+            await this.extendObjectAsync(DISCOVERY_STATE_ID, {
+                type: 'state',
+                common: {
+                    name: 'Printer search results (HTML, for the Admin configuration)',
+                    type: 'string',
+                    role: 'html',
+                    read: true,
+                    write: false,
+                    def: '',
+                },
+                native: {},
+            });
+            const configuredSerials = new Set(
+                (Array.isArray(this.config.printers) ? this.config.printers : [])
+                    .map(printer =>
+                        String(printer?.serial || '')
+                            .trim()
+                            .toUpperCase(),
+                    )
+                    .filter(Boolean),
+            );
+            const cached = await this.getStateAsync('discovery.resultsData');
+            if (cached?.val) {
+                try {
+                    const data = JSON.parse(cached.val);
+                    const scannedAt = data.scannedAt ? new Date(data.scannedAt) : new Date();
+                    await this.setState(
+                        DISCOVERY_STATE_ID,
+                        createDiscoveryHtml(data.printers || [], configuredSerials, language, scannedAt),
+                        true,
+                    );
+                } catch (error) {
+                    this.log.warn(`Could not restore cached printer discovery results: ${error.message || error}`);
+                }
+            } else {
+                const current = await this.getStateAsync(DISCOVERY_STATE_ID);
+                if (!current || !current.val) {
+                    await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+                }
+            }
+        } catch (error) {
+            this.log.warn(`Could not prepare the printer search result state: ${error.message || error}`);
+        }
+    }
 
-        // Get system language, use EN as fallback in case of errors
+    async onReady() {
         const sys_conf = await this.getForeignObjectAsync('system.config');
         if (sys_conf && sys_conf.common.language) {
             language = sys_conf.common.language;
         }
 
-        // Reset the connection indicator during startup
+        await this.setupDiscoveryState();
         await this.setState('info.connection', false, true);
-
-        // Download / Update HMS error Codes
         await this.loadHMSErrorCodeTranslations();
 
-        // Handle MQTT messages
-        this.mqttMessageHandle();
+        const printersWithUniqueIds = ensureUniqueIds(getPrinters(this.config));
+        const printers = ensureUniqueSerials(printersWithUniqueIds, (printer, reason) => {
+            this.log.error(
+                `Skipping configured printer "${printer.name || printer.id}" (${printer.serial || 'no serial'}): ${reason}.`,
+            );
+        });
+        if (!printers.length) {
+            this.log.error(
+                'No valid printer configured. Please add at least one printer with IP, serial and access token.',
+            );
+            return;
+        }
+
+        // Remove object trees for printers deleted from the configuration.
+        // Do this only after at least one valid printer was found to avoid
+        // destructive cleanup on an incomplete/empty configuration.
+        try {
+            const deviceView = await this.getObjectViewAsync('system', 'device', {
+                startkey: `${this.namespace}.`,
+                endkey: `${this.namespace}.\u9999`,
+            });
+            const existingDeviceIds = (deviceView?.rows || []).map(row => row.id);
+            const stalePrinterIds = getStalePrinterRootIds(
+                existingDeviceIds,
+                this.namespace,
+                printers.map(printer => printer.id),
+            );
+
+            for (const stalePrinterId of stalePrinterIds) {
+                this.log.info(`Removing stale printer objects for "${stalePrinterId}"`);
+                await this.delObjectAsync(stalePrinterId, { recursive: true });
+
+                const cachePrefix = `${stalePrinterId}.`;
+                for (const objectId of this.createdStructureObjects) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        this.createdStructureObjects.delete(objectId);
+                    }
+                }
+                for (const objectId of this.lastStateValues.keys()) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        this.lastStateValues.delete(objectId);
+                    }
+                }
+                for (const objectId of Object.keys(this.createdStatesDetails)) {
+                    if (objectId === stalePrinterId || objectId.startsWith(cachePrefix)) {
+                        delete this.createdStatesDetails[objectId];
+                    }
+                }
+            }
+        } catch (e) {
+            this.log.warn(`Could not clean up removed printer objects: ${e}`);
+        }
+
+        const credentialConfigSource =
+            Array.isArray(this.config.printers) && this.config.printers.length > 0 ? 'printer table' : 'legacy config';
+
+        // Compare the configured table token with the working legacy adapter's
+        // native credential without ever logging either credential or a hash.
+        let legacyAccessToken;
+        let legacyConfigAvailable = false;
+        try {
+            const legacyAdapterObject = await this.getForeignObjectAsync('system.adapter.bambulab.0');
+            if (legacyAdapterObject && legacyAdapterObject.native) {
+                legacyConfigAvailable = true;
+                legacyAccessToken = legacyAdapterObject.native.Password;
+            }
+        } catch (error) {
+            this.log.debug(
+                `Could not read legacy bambulab.0 config for credential comparison: ${error.message || error}`,
+            );
+        }
+
+        for (const printer of printers) {
+            // Remove the obsolete AMS -> ams subtree created by previous adapter
+            // versions. The new layout stores units at printer.ams.units.
+            // Only remove this legacy branch, never the whole AMS channel.
+            try {
+                const legacyAmsBranch = `${printer.id}.ams.ams`;
+                if (await this.getObjectAsync(legacyAmsBranch)) {
+                    this.log.info(`Removing obsolete AMS object branch for "${printer.name || printer.id}"`);
+                    await this.delObjectAsync(legacyAmsBranch, { recursive: true });
+                }
+            } catch (e) {
+                this.log.warn(`Could not remove obsolete AMS object branch for "${printer.name || printer.id}": ${e}`);
+            }
+
+            const context = createPrinterContext(this, printer);
+            this.printers.set(printer.id, context);
+
+            // Safe credential diagnostics: never log the access token itself.
+            const accessToken = context.config.Password;
+            this.log.info(
+                `Credential diagnostics for "${context.printerName}": source=${credentialConfigSource}, token present=${Boolean(accessToken)}, type=${typeof accessToken}, length=${typeof accessToken === 'string' ? accessToken.length : 'n/a'}.`,
+            );
+            const credentialComparison = compareCredentialValues(accessToken, legacyAccessToken);
+            this.log.info(
+                `Credential comparison for "${context.printerName}" against bambulab.0 native Password: original config available=${legacyConfigAvailable}, result=${credentialComparison === null ? 'unavailable' : credentialComparison ? 'MATCH' : 'DIFFERENT'}.`,
+            );
+
+            // Keep connection status per printer. The adapter instance itself
+            // remains connected while its runtime is active, even if printers are offline.
+            await this.extendObjectAsync(`${printer.id}.info`, {
+                type: 'channel',
+                common: { name: `${context.printerName} information` },
+                native: {},
+            });
+            await this.extendObjectAsync(`${printer.id}.info.connection`, {
+                type: 'state',
+                common: {
+                    name: 'Printer connected',
+                    type: 'boolean',
+                    role: 'indicator.connected',
+                    read: true,
+                    write: false,
+                    def: false,
+                },
+                native: {},
+            });
+            await this.setStateAsync(`${printer.id}.info.connection`, { val: false, ack: true });
+
+            const adapterSetState = this.setState.bind(this);
+            context.setState = (id, state, ack) => {
+                if (id !== 'info.connection') {
+                    return adapterSetState(id, state, ack);
+                }
+
+                const printerStateId = `${context.printerId}.info.connection`;
+                const writePrinterState =
+                    state && typeof state === 'object'
+                        ? adapterSetState(printerStateId, state)
+                        : adapterSetState(printerStateId, state, ack);
+                return writePrinterState;
+            };
+
+            this.log.info(`Starting printer runtime "${context.printerName}" (${printer.serial}) at ${printer.host}`);
+            context.mqttMessageHandle();
+        }
+
+        // The adapter is operational when its runtime is initialized. Printer
+        // availability is reported separately via <printer>.info.connection.
+        await this.setStateAsync('info.connection', { val: true, ack: true });
     }
 
     /**
@@ -73,19 +296,24 @@ class Bambulab extends utils.Adapter {
      */
     mqttMessageHandle() {
         try {
+            if (this.shuttingDown) {
+                this.log.debug(`Skipping MQTT startup for printer "${this.printerId}" during shutdown`);
+                return;
+            }
+
             // Prevent multiple concurrent connection attempts
-            if (clientConnection.initiated) {
+            if (this.clientConnection.initiated) {
                 this.log.debug(`MQTT connection already in progress, skipping`);
                 return;
             }
 
             // Only log connection attempt if we haven't shown the reconnect message yet
-            if (!clientConnection.reconnectMessageShown) {
-                if (clientConnection.connectError) {
-                    this.log.info(
+            if (!this.clientConnection.reconnectMessageShown) {
+                if (this.clientConnection.connectError) {
+                    this.log.debug(
                         `Attempting to reconnect to printer - will retry automatically every 30 seconds until connection is restored`,
                     );
-                    clientConnection.reconnectMessageShown = true;
+                    this.clientConnection.reconnectMessageShown = true;
                 } else {
                     this.log.info(`Try to connect to printer`);
                 }
@@ -93,38 +321,48 @@ class Bambulab extends utils.Adapter {
                 this.log.debug(`Retrying connection to printer`);
             }
 
-            clientConnection.initiated = true;
+            this.clientConnection.initiated = true;
 
-            // Properly close existing client if present
-            if (client) {
-                client.removeAllListeners();
-                client.end();
-                client = null;
+            // Properly close existing this.client if present
+            if (this.client) {
+                this.client.removeAllListeners();
+                this.client.end();
+                this.client = null;
             }
 
             // Connect to Printer using MQTT
-            client = mqtt.connect(`mqtts://${this.config.host}:8883`, {
+            const client = mqtt.connect(`mqtts://${this.config.host}:8883`, {
                 username: 'bblp',
                 password: this.config.Password,
-                reconnectPeriod: 30,
+                reconnectPeriod: 30000,
                 rejectUnauthorized: false,
             });
+            this.client = client;
 
             // Establish connection to printer by MQTT
             client.on('connect', () => {
-                if (!clientConnection.connected) {
-                    this.log.info(`Printer connected successfully`);
+                if (this.client !== client || this.shuttingDown) {
+                    return;
                 }
-                this.setState('info.connection', true, true);
-                clientConnection.connected = true;
-                clientConnection.connectError = false;
-                clientConnection.initiated = false; // Reset initiated flag on successful connection
-                clientConnection.reconnectMessageShown = false; // Reset for future disconnections
+                if (!this.clientConnection.connected) {
+                    this.log.info(`Printer "${this.printerName}" connected successfully`);
+                }
+                this.clientConnection.connected = true;
+
+                this.clientConnection.connectError = false;
+                this.clientConnection.initiated = false; // Reset initiated flag on successful connection
+                this.clientConnection.reconnectMessageShown = false; // Reset for future disconnections
 
                 this.createControlStates();
 
                 // Subscribe on a printer topic after connection
-                client.subscribe([`device/${this.config.serial}/report`], () => {
+                client.subscribe([`device/${this.config.serial}/report`], error => {
+                    if (this.client !== client || this.shuttingDown) {
+                        return;
+                    }
+                    if (error) {
+                        this.log.warn(`MQTT subscribe failed: ${error.message || error}`);
+                    }
                     this.log.debug(`Subscribed to printer data topic by serial | ${this.config.serial}`);
                 });
 
@@ -134,72 +372,109 @@ class Bambulab extends utils.Adapter {
 
             // Receive MQTT messages
             client.on('message', (topic, message) => {
-                // Parse string to an JSON object
-                message = JSON.parse(message.toString());
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
+                // Parse printer payload safely; malformed MQTT packets must not crash the adapter.
+                try {
+                    message = JSON.parse(message.toString());
+                } catch (error) {
+                    this.log.warn(`Ignoring invalid MQTT JSON message on topic ${topic}: ${error.message}`);
+                    return;
+                }
 
                 // @ts-expect-error if print does not exist function will return false and skip
                 if (message && message.print && message && message.print.result) {
                     // Handle values for printer statistics
-                    this.log.debug(`Printer message result ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Printer message result ${JSON.stringify(message)}`);
+                    }
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.print) {
-                    this.log.debug(`Printer Message ${JSON.stringify(message)}`);
-                    this.messageHandler(message);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Printer Message ${JSON.stringify(message)}`);
+                    }
+                    this.messageQueue = this.messageQueue
+                        .then(() => {
+                            // A message may wait in the queue until its MQTT client has
+                            // already been replaced. Never apply stale telemetry.
+                            if (this.client !== client || this.shuttingDown) {
+                                return;
+                            }
+                            return this.messageHandler(message);
+                        })
+                        .catch(error => {
+                            this.log.error(`[MQTT Message queue] ${error.message || error}`);
+                        });
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.command) {
                     this.log.info(`Response to control command ${JSON.stringify(message)}`);
                     // @ts-expect-error if system does not exist function will return false and skip
                 } else if (message && message.system) {
                     // Handle values for system messages, used to acknowledge messages
-                    this.log.debug(`System Message ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`System Message ${JSON.stringify(message)}`);
+                    }
                 } else if (message && message['t_utc']) {
                     // Handle values for system messages, used to acknowledge messages
                     // this.log.info(`System Message ${JSON.stringify(message)}`);
                     // TimeStamp Message, ignore
                 } else {
-                    this.log.debug(`Unknown Message ${JSON.stringify(message)}`);
+                    if (this.log.level === 'debug' || this.log.level === 'silly') {
+                        this.log.debug(`Unknown Message ${JSON.stringify(message)}`);
+                    }
                 }
-                clientConnection.connected = true;
-                clientConnection.connectError = false;
+                this.clientConnection.connected = true;
+                this.clientConnection.connectError = false;
             });
 
             client.on('end', () => {
-                if (clientConnection.connected) {
-                    this.log.warn(
-                        `Printer connection lost - this could be due to printer being powered off or network issues`,
-                    );
+                if (this.client !== client || this.shuttingDown) {
+                    return;
                 }
-                this.setState('info.connection', false, true);
-                clientConnection.connected = false;
-                clientConnection.connectError = true;
-                clientConnection.initiated = false;
+                markPrinterDisconnected(this, this.setState.bind(this));
             });
 
-            client.on('error', error => {
-                if (!clientConnection.connectError) {
-                    this.log.error(`Connection issue occurred: ${error} - printer may be powered off or unreachable`);
+            // MQTT.js emits close on transport loss, including during automatic reconnect.
+            client.on('close', () => {
+                if (this.client !== client || this.shuttingDown) {
+                    return;
                 }
+                markPrinterDisconnected(this, this.setState.bind(this));
+            });
+
+            client.on('error', () => {
+                if (this.client !== client || this.shuttingDown) {
+                    return;
+                }
+                // A failed first connection is expected when a configured printer is
+                // switched off or temporarily unreachable. Only report a loss if this
+                // printer had an established connection before the error.
+                const wasConnected = this.clientConnection.connected;
+
                 // Close MQTT connection
                 client.end();
-                if (clientConnection.connected) {
-                    this.log.warn(
-                        `Printer connection lost - this could be due to printer being powered off or network issues`,
+                if (wasConnected) {
+                    this.log.info(
+                        `Printer "${this.printerName}" connection lost - printer may have been powered off or become unreachable`,
                     );
                 }
-                this.setState('info.connection', false, true);
+                this.clientConnection.connected = false;
 
-                // Try to reconnect by creating a new client instead of using reconnect()
-                if (timeouts[this.config.serial]) {
-                    this.clearTimeout(timeouts[this.config.serial]);
-                    timeouts[this.config.serial] = null;
+                // Try to reconnect by creating a new this.client instead of using reconnect()
+                if (timeouts[this.printerId]) {
+                    this.clearTimeout(timeouts[this.printerId]);
+                    timeouts[this.printerId] = null;
                 }
-                timeouts[this.config.serial] = this.setTimeout(() => {
-                    // Create a new MQTT connection instead of reconnecting the ended client
-                    this.mqttMessageHandle();
+                timeouts[this.printerId] = this.setTimeout(() => {
+                    // Ignore a retry timer if another MQTT client has already replaced this one.
+                    if (!this.shuttingDown && this.client === client) {
+                        this.mqttMessageHandle();
+                    }
                 }, 30000);
-                clientConnection.connected = false;
-                clientConnection.connectError = true;
-                clientConnection.initiated = false;
+                this.clientConnection.connected = false;
+                this.clientConnection.connectError = true;
+                this.clientConnection.initiated = false;
             });
         } catch (e) {
             this.log.error(`[MQTT Message handler] ${e} | ${e.stack}`);
@@ -213,58 +488,44 @@ class Bambulab extends utils.Adapter {
      */
     async messageHandler(message) {
         try {
-            // Implement message buffer to avoid processing too many messages in a short time
-            if (clientConnection.messageBuffer === false) {
-                try {
-                    this.log.debug(`Message buffer inactive, message processing`);
-                    if (this.config.messageBuffer > 0) {
-                        clientConnection.messageBuffer = true;
-                        timeouts['messageBuffer'] = this.setTimeout(() => {
-                            // Request data for P1p printer series
-                            clientConnection.messageBuffer = false;
-                        }, this.config.messageBuffer * 1000);
-                    }
-                } catch (e) {
-                    this.log.error(`[MQTT Message handler] ${e}`);
-                }
-            } else {
-                this.log.debug(`Message buffer active, skipping message processing`);
-                return; // Ignore Message
-            }
+            // Process every MQTT report. Printer reports are often partial/delta updates;
+            // dropping messages here can leave ioBroker states stale or incomplete.
 
             if (message.print) {
-                try {
-                    this.log.debug(`Extruder R temp: ${message.print.device.extruder.info[0].temp}`);
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                if (this.log.level === 'debug' || this.log.level === 'silly') {
+                    try {
+                        this.log.debug(`Extruder R temp: ${message.print.device.extruder.info[0].temp}`);
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(
-                        `Extruder R temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[0].temp)}`,
-                    );
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(
+                            `Extruder R temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[0].temp)}`,
+                        );
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(`Extruder L temp: ${message.print.device.extruder.info[1].temp}`);
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(`Extruder L temp: ${message.print.device.extruder.info[1].temp}`);
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(
-                        `Extruder L temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[1].temp)}`,
-                    );
-                } catch {
-                    // Ignore if extruder info is not available
-                }
+                    try {
+                        this.log.debug(
+                            `Extruder L temp decoded: ${decodeExtruderTemp(message.print.device.extruder.info[1].temp)}`,
+                        );
+                    } catch {
+                        // Ignore if extruder info is not available
+                    }
 
-                try {
-                    this.log.debug(`Nozzel temp: ${decodeExtruderTemp(message.print.nozzle_temper)}`);
-                } catch {
-                    // Ignore if nozzle_temper is not available
+                    try {
+                        this.log.debug(`Nozzel temp: ${decodeExtruderTemp(message.print.nozzle_temper)}`);
+                    } catch {
+                        // Ignore if nozzle_temper is not available
+                    }
                 }
 
                 function decodeExtruderTemp(raw) {
@@ -287,12 +548,12 @@ class Bambulab extends utils.Adapter {
                 // Store original stg_cur value for printer state checking before conversion
                 const originalStgCur = message.print.stg_cur;
 
-                // Update current printing state for safety checks
-                currentPrintingState = originalStgCur;
-
-                if (message.print.stg_cur != null) {
-                    message.print.stg_cur = convert.stageParser(message.print.stg_cur);
-                    message.print.control.stg_cur = convert.stageParser(message.print.stg_cur);
+                // Keep the last known printing state when a delta report omits stg_cur.
+                // This state is also used to block potentially dangerous G-code commands.
+                if (originalStgCur != null) {
+                    this.currentPrintingState = originalStgCur;
+                    message.print.stg_cur = convert.stageParser(originalStgCur);
+                    message.print.control.stg_cur = message.print.stg_cur;
                 }
                 if (message.print.big_fan1_speed != null) {
                     message.print.big_fan1_speed = convert.fanSpeed(message.print.big_fan1_speed);
@@ -321,7 +582,7 @@ class Bambulab extends utils.Adapter {
                     //    2 = Paused
                     //    3 = Completed
                     //    4+ = Other working states (update as needed)
-                    if (originalStgCur != null && originalStgCur >= 0) {
+                    if (this.currentPrintingState != null && this.currentPrintingState >= 0) {
                         message.print.finishTime = new Date(
                             new Date().getTime() + message.print.mc_remaining_time * 60000,
                         ).toISOString();
@@ -358,51 +619,69 @@ class Bambulab extends utils.Adapter {
                 }
 
                 // Translate HMS Code & write to state
-                const hmsError = [];
+                let hmsErrorCodeJson;
                 if (message.print.hms != null) {
+                    hmsErrorCodeJson = getCachedHmsErrorJson(this, message.print.hms, language, hmsEntries => {
+                        const hmsError = [];
+                        for (const hms_code in hmsEntries) {
+                            const attr = convert.DecimalHexTwosComplement(hmsEntries[hms_code].attr);
+                            const code = convert.DecimalHexTwosComplement(hmsEntries[hms_code].code);
+
+                            let full_code = (attr + code).replace(/(.{4})/g, '$1_');
+                            full_code = full_code.substring(0, full_code.length - 1);
+                            const urlEN = `https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/${full_code}`;
+
+                            let errorDesc = 'No description available in your language';
+                            const translation = errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()];
+                            if (translation != null && translation['desc'] != null) {
+                                errorDesc = translation['desc'];
+                            }
+                            const errorMessageArray = {
+                                code: `HMS_${full_code}`,
+                                'url-EN': urlEN,
+                                description: errorDesc,
+                            };
+                            if (language.toUpperCase() !== 'EN') {
+                                errorMessageArray['url-local'] =
+                                    `https://wiki.bambulab.com/${language}/x1/troubleshooting/hmscode/${full_code}`;
+                            }
+                            hmsError.push(errorMessageArray);
+                        }
+                        return hmsError;
+                    });
                     message.print.hms.hmsErrors = true;
-                    for (const hms_code in message.print.hms) {
-                        const attr = convert.DecimalHexTwosComplement(message.print.hms[hms_code].attr);
-                        const code = convert.DecimalHexTwosComplement(message.print.hms[hms_code].code);
-
-                        let full_code = (attr + code).replace(/(.{4})/g, '$1_');
-                        full_code = full_code.substring(0, full_code.length - 1);
-                        const urlEN = `https://wiki.bambulab.com/en/x1/troubleshooting/hmscode/${full_code}`;
-
-                        let errorDesc = 'No description available in your language';
-                        if (
-                            errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()] != null &&
-                            errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()]['desc'] != null
-                        ) {
-                            errorDesc = errorCodesHMS[full_code.replaceAll('_', '').toUpperCase()]['desc'];
-                        }
-                        const errorMessageArray = { code: `HMS_${full_code}`, 'url-EN': urlEN, description: errorDesc };
-                        if (language.toUpperCase() !== 'EN') {
-                            errorMessageArray['url-local'] =
-                                `https://wiki.bambulab.com/${language}/x1/troubleshooting/hmscode/${full_code}`;
-                        }
-                        hmsError.push(errorMessageArray);
-                    }
                 } else {
                     message.print.hms = {
                         hmsErrorCount: 0,
                         hmsErrors: false,
                     };
+                    hmsErrorCodeJson = getCachedHmsErrorJson(this, null, language, () => []);
                 }
 
-                await this.setState(`${this.config.serial}.hms.hmsErrorCode`, {
-                    val: JSON.stringify(hmsError),
-                    ack: true,
-                });
+                // Avoid repeated ioBroker state writes for unchanged translated HMS data.
+                if (this.lastHmsErrorCode !== hmsErrorCodeJson) {
+                    await this.setState(`${this.printerId}.hms.hmsErrorCode`, {
+                        val: hmsErrorCodeJson,
+                        ack: true,
+                    });
+                    this.lastHmsErrorCode = hmsErrorCodeJson;
+                }
 
-                // For some reason library does not convert the ams related bed_temp to number when value = 0
-                if (
-                    message.print.ams != null &&
-                    message.print.ams.ams_exist_bits != null &&
-                    message.print.ams.ams_exist_bits === '1'
-                ) {
-                    // Call function to handle states for AMS unit
+                // Process all reported AMS units. ams_exist_bits is a bitmask:
+                // with two connected AMS devices it is "3", not "1".
+                // The presence of the actual unit array is the reliable condition.
+                if (Array.isArray(message.print.ams?.ams)) {
                     message.print.ams.ams = this.handleAMSUnits(message);
+                }
+            }
+
+            // Estimate filament grams for the external spool (vt_tray) only if MQTT omits remain_g.
+            const vtTray = message.print.vt_tray;
+            if (vtTray && vtTray.remain_g == null) {
+                const pct = Number(vtTray.remain);
+                const nominalG = Number(vtTray.tray_weight);
+                if (Number.isFinite(pct) && pct >= 0 && pct <= 100 && Number.isFinite(nominalG) && nominalG > 0) {
+                    vtTray.remain_g = Math.round((nominalG * pct) / 100);
                 }
             }
 
@@ -413,19 +692,41 @@ class Bambulab extends utils.Adapter {
                 message.print.doorOpen = false;
             }
 
+            // Normalize known MQTT type inconsistencies only at their specific paths.
+            // err2.err_code is sometimes sent as a numeric string, while nozzle.tar_id
+            // can arrive as a number. Keep global state definitions unchanged because
+            // these keys are used with different types elsewhere.
+            const errCode = message.print.err2?.err_code;
+            if (typeof errCode === 'string') {
+                const normalizedErrCode = errCode.trim();
+                if (normalizedErrCode !== '' && Number.isFinite(Number(normalizedErrCode))) {
+                    message.print.err2.err_code = Number(normalizedErrCode);
+                }
+            }
+            if (typeof message.print.device?.nozzle?.tar_id === 'number') {
+                message.print.device.nozzle.tar_id = String(message.print.device.nozzle.tar_id);
+            }
+
+            // Derive an explicit OTA update indicator from the versions advertised by the printer.
+            // Do not infer availability from new_version_state alone: its numeric values are
+            // firmware-specific, while the OTA current/new version pair is directly comparable.
+            if (message.print.upgrade_state && typeof message.print.upgrade_state === 'object') {
+                const firmwareUpdate = deriveFirmwareUpdate(message.print.upgrade_state);
+                if (firmwareUpdate) {
+                    Object.assign(message.print.upgrade_state, firmwareUpdate);
+                }
+            }
+
             // Explore JSON & create states
-            const returnJONexplorer = await jsonExplorer.traverseJson(
-                message.print,
-                this.config.serial,
-                false,
-                false,
-                0,
-            );
-            this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
+            const organizedPrint = organizeTelemetry(message.print);
+            const returnJONexplorer = await jsonExplorer.traverseJson(organizedPrint, this.printerId, false, false, 0);
+            if (this.log.level === 'debug' || this.log.level === 'silly') {
+                this.log.debug(`Response of JSONexploer: ${JSON.stringify(returnJONexplorer)}`);
+            }
         } catch (e) {
             this.log.error(`[messageHandler] ${e} | ${e.stack}`);
         }
-        clientConnection.initiated = true;
+        this.clientConnection.initiated = true;
     }
 
     handleAMSUnits(message) {
@@ -434,35 +735,26 @@ class Bambulab extends utils.Adapter {
         for (const unit in amsData) {
             if (amsData[unit] !== null) {
                 for (const tray in amsData[unit].tray) {
-                    if (!amsData[unit].tray[tray].cols) {
-                        // amsData[unit].tray[tray] =   {
-                        // 	'bed_temp': '',
-                        // 	'bed_temp_type': '',
-                        // 	'cols': [],
-                        // 	'drying_temp': '',
-                        // 	'drying_time': '',
-                        // 	'id': '',
-                        // 	'nozzle_temp_max': '',
-                        // 	'nozzle_temp_min': '',
-                        // 	'remain': 0,
-                        // 	'tag_uid': '',
-                        // 	'tray_color': '',
-                        // 	'tray_diameter': '',
-                        // 	'tray_id_name': '',
-                        // 	'tray_info_idx': '',
-                        // 	'tray_sub_brands': '',
-                        // 	'tray_type': '',
-                        // 	'tray_uuid': '',
-                        // 	'tray_weight': '',
-                        // 	'xcam_info': ''
-                        // };
-                        // amsData[unit].tray[tray]._filamentPresent = false;
-                    } else {
-                        // amsData[unit].tray[tray]._filamentPresent = true;
-                        amsData[unit].tray[tray].bed_temp = parseInt(amsData[unit].tray[tray].bed_temp);
+                    const trayData = amsData[unit].tray[tray];
+                    // Calculate estimated remaining filament grams only when MQTT omits remain_g.
+                    const trayObj = amsData[unit].tray[tray];
+                    if (trayObj.remain_g == null) {
+                        const pct = Number(trayObj.remain);
+                        const nominalG = Number(trayObj.tray_weight);
+                        if (
+                            Number.isFinite(pct) &&
+                            pct >= 0 &&
+                            pct <= 100 &&
+                            Number.isFinite(nominalG) &&
+                            nominalG > 0
+                        ) {
+                            trayObj.remain_g = Math.round((nominalG * pct) / 100);
+                        }
                     }
-                    if (amsData[unit].tray[tray].bed_temp != null) {
-                        amsData[unit].tray[tray].bed_temp = parseInt(amsData[unit].tray[tray].bed_temp);
+                    // Convert bed_temp only once per tray. Some firmware payloads omit
+                    // this field, while populated trays may send it as a string.
+                    if (trayData.cols || trayData.bed_temp != null) {
+                        trayData.bed_temp = parseInt(trayData.bed_temp);
                     }
                 }
             }
@@ -471,12 +763,21 @@ class Bambulab extends utils.Adapter {
     }
 
     publishMQTTmessages(msg) {
-        this.log.debug(`Publish message ${JSON.stringify(msg)}`);
+        if (this.log.level === 'debug' || this.log.level === 'silly') {
+            this.log.debug(`Publish message ${JSON.stringify(msg)}`);
+        }
+
+        // State changes can trigger commands while the printer is disconnected.
+        // Avoid dereferencing a missing or disconnected MQTT this.client.
+        if (this.shuttingDown || !this.client || !this.client.connected) {
+            this.log.debug('Skipping MQTT publish because the printer is not connected');
+            return;
+        }
 
         const topic = `device/${this.config.serial}/request`;
-        client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
+        this.client.publish(topic, JSON.stringify(msg), { qos: 0, retain: false }, error => {
             if (error) {
-                console.error(error);
+                this.log.warn(`MQTT publish failed: ${error.message || error}`);
             }
         });
     }
@@ -494,17 +795,21 @@ class Bambulab extends utils.Adapter {
         // Try to request data
         this.publishMQTTmessages(msg);
 
-        // Handle an interval only if not X1-Series
-        if (timeouts['dataPolling']) {
-            this.clearTimeout(timeouts['dataPolling']);
-            timeouts['dataPolling'] = null;
+        // Keep a polling timer only for P1-Series printers.
+        if (timeouts[`${this.printerId}_dataPolling`]) {
+            this.clearTimeout(timeouts[`${this.printerId}_dataPolling`]);
+            timeouts[`${this.printerId}_dataPolling`] = null;
         }
-        timeouts['dataPolling'] = this.setTimeout(() => {
-            // Request data for P1p printer series
-            if (this.config.printerModel === 'P1-Series') {
-                this.requestData();
-            }
-        }, this.config.requestInterval * 1000);
+        if (['P1P', 'P1S', 'P1-Series'].includes(this.config.printerModel)) {
+            // P1 printers can lag when pushall is requested too frequently.
+            // Enforce a conservative minimum of five minutes, including legacy configs.
+            const pollingInterval = Math.max(300, Number(this.config.requestInterval) || 300);
+            timeouts[`${this.printerId}_dataPolling`] = this.setTimeout(() => {
+                if (!this.shuttingDown) {
+                    this.requestData();
+                }
+            }, pollingInterval * 1000);
+        }
     }
 
     createControlStates() {
@@ -589,7 +894,7 @@ class Bambulab extends utils.Adapter {
             },
         };
 
-        this.extendObject(`${this.config.serial}.control`, {
+        this.extendObject(`${this.printerId}.control`, {
             type: 'channel',
             common: {
                 name: `Control device`,
@@ -597,16 +902,16 @@ class Bambulab extends utils.Adapter {
         });
 
         for (const state in controlStates) {
-            this.extendObject(`${this.config.serial}.control.${state}`, {
+            this.extendObject(`${this.printerId}.control.${state}`, {
                 type: 'state',
                 common: controlStates[state],
             });
 
-            this.subscribeStates(`${this.config.serial}.control.${state}`);
+            this.subscribeStates(`${this.printerId}.control.${state}`);
         }
 
         for (const state in hmstates) {
-            this.extendObject(`${this.config.serial}.hms.${state}`, {
+            this.extendObject(`${this.printerId}.hms.${state}`, {
                 type: 'state',
                 common: hmstates[state],
             });
@@ -658,14 +963,17 @@ class Bambulab extends utils.Adapter {
 
             if (currentTran == null || currentTran.val === '') {
                 this.log.info(`No Local translation available, version ${onlineTran.ver} downloaded`);
-                this.setStateAsync(`info.hmsErrorCodeTranslations`, { val: JSON.stringify(onlineTranObj), ack: true });
+                await this.setStateAsync(`info.hmsErrorCodeTranslations`, {
+                    val: JSON.stringify(onlineTranObj),
+                    ack: true,
+                });
                 await loadTranslationsToMemory(onlineTranObj);
             } else if (typeof currentTran.val === 'string' && currentTran.val !== '') {
                 const currentTranObj = JSON.parse(currentTran.val);
                 // Check if new version is available
                 if (currentTranObj.ver !== onlineTran.ver) {
                     this.log.info(`Local translation ${currentTranObj.ver} outdated, updating to ${onlineTran.ver}`);
-                    this.setStateAsync(`info.hmsErrorCodeTranslations`, {
+                    await this.setStateAsync(`info.hmsErrorCodeTranslations`, {
                         val: JSON.stringify(onlineTranObj),
                         ack: true,
                     });
@@ -674,7 +982,7 @@ class Bambulab extends utils.Adapter {
                     this.log.info(
                         `Local translation ${currentTranObj.language} incorrect, updating to ${language.toUpperCase()}`,
                     );
-                    this.setStateAsync(`info.hmsErrorCodeTranslations`, {
+                    await this.setStateAsync(`info.hmsErrorCodeTranslations`, {
                         val: JSON.stringify(onlineTranObj),
                         ack: true,
                     });
@@ -685,19 +993,25 @@ class Bambulab extends utils.Adapter {
                 }
             }
         } catch (e) {
-            if (e.code === 'ECONNABORTED' || e.message.includes('timeout')) {
+            // Axios errors normally expose code/message, but keep error handling safe for
+            // unexpected thrown values as well.
+            const errorCode = e && typeof e === 'object' ? e.code : undefined;
+            const errorMessage = e && typeof e === 'object' && e.message ? e.message : String(e);
+            if (errorCode === 'ECONNABORTED' || errorMessage.includes('timeout')) {
                 this.log.warn(
                     `Translation definitions not updated, cannot connect to Bambulab documentation (timeout)`,
                 );
-                this.log.debug(`[loadHMSErrorCodeTranslations] Timeout details: ${e.message}`);
-            } else if (e.code === 'ENOTFOUND' || e.code === 'ECONNREFUSED') {
+                this.log.debug(`[loadHMSErrorCodeTranslations] Timeout details: ${errorMessage}`);
+            } else if (errorCode === 'ENOTFOUND' || errorCode === 'ECONNREFUSED') {
                 this.log.warn(
                     `Translation definitions not updated, cannot connect to Bambulab documentation (network error)`,
                 );
-                this.log.debug(`[loadHMSErrorCodeTranslations] Network error details: ${e.message}`);
+                this.log.debug(`[loadHMSErrorCodeTranslations] Network error details: ${errorMessage}`);
             } else {
                 this.log.warn(`Translation definitions not updated, error downloading from Bambulab documentation`);
-                this.log.debug(`[loadHMSErrorCodeTranslations] Error details: ${e.message} | ${e.stack}`);
+                this.log.debug(
+                    `[loadHMSErrorCodeTranslations] Error details: ${errorMessage} | ${e && e.stack ? e.stack : ''}`,
+                );
             }
         }
     }
@@ -709,26 +1023,17 @@ class Bambulab extends utils.Adapter {
      */
     onUnload(callback) {
         try {
-            // Close running timers
-            if (timeouts[this.config.serial]) {
-                this.clearTimeout(timeouts[this.config.serial]);
-                timeouts[this.config.serial] = null;
-            }
-            if (timeouts['dataPolling']) {
-                this.clearTimeout(timeouts['dataPolling']);
-                timeouts[timeouts['dataPolling']] = null;
+            jsonExplorer.clearStateExpireTimers();
+
+            for (const context of this.printers.values()) {
+                try {
+                    shutdownPrinterContext(context, timeouts, timer => this.clearTimeout(timer));
+                } catch (e) {
+                    this.log.error(`[onUnload] Failed to stop printer "${context.printerId}": ${e}`);
+                }
             }
 
-            if (timeouts['messageBuffer']) {
-                this.clearTimeout(timeouts['messageBuffer']);
-                timeouts['messageBuffer'] = null;
-            }
-
-            // Close MQTT connection if present
-            if (client) {
-                client.end();
-            }
-
+            this.printers.clear();
             callback();
         } catch (e) {
             this.log.error(`[onUnload] ${e} | ${e.stack}`);
@@ -753,7 +1058,7 @@ class Bambulab extends utils.Adapter {
         //   -2 = Offline (safe)
         //   -1 = Idle (safe)
         //    0+ = Active working states (potentially dangerous)
-        return currentPrintingState != null && currentPrintingState >= 0;
+        return this.currentPrintingState != null && this.currentPrintingState >= 0;
     }
 
     /**
@@ -767,21 +1072,181 @@ class Bambulab extends utils.Adapter {
             return false; // Allow all commands when not actively working
         }
 
-        // Convert to string and check if any blocked command is present
-        const upperParam = String(gcodeParam).toUpperCase().trim();
-        return blockedCommandsDuringPrinting.some(
-            blockedCmd =>
-                upperParam.startsWith(`${blockedCmd} `) ||
-                upperParam === blockedCmd ||
-                upperParam.startsWith(`${blockedCmd}\n`),
+        // Check every line and recognize compact G-code (e.g. G1X10), too.
+        // Match command numbers as a whole so G10 is not mistaken for G1.
+        const lines = String(gcodeParam).toUpperCase().split(/\r?\n/);
+        const blockedCommandPattern = new RegExp(`^(${blockedCommandsDuringPrinting.join('|')})(?=$|[A-Z\\s;])`);
+        return lines.some(line => blockedCommandPattern.test(line.trim()));
+    }
+
+    /**
+     * Validate numeric printer control values before sending MQTT commands.
+     *
+     * @param {number|string} value - Requested control value
+     * @param {string} control - Control name for logging
+     * @param {number} min - Minimum accepted value
+     * @param {number} max - Maximum accepted value
+     * @param {boolean} integer - Whether the value must be an integer (defaults to false)
+     * @returns {number|null} Validated numeric value or null
+     */
+    validateNumericControl(value, control, min, max, integer = false) {
+        const numericValue = typeof value === 'number' ? value : Number(value);
+        if (
+            !Number.isFinite(numericValue) ||
+            numericValue < min ||
+            numericValue > max ||
+            (integer && !Number.isInteger(numericValue))
+        ) {
+            this.log.warn(
+                `Rejected invalid ${control} value "${value}". Expected ${integer ? 'an integer' : 'a number'} between ${min} and ${max}.`,
+            );
+            return null;
+        }
+        return numericValue;
+    }
+
+    /**
+     * Handle Admin configuration actions.
+     *
+     * @param {ioBroker.Message} obj Admin message.
+     */
+    async onMessage(obj) {
+        if (!obj || !obj.command) {
+            return;
+        }
+
+        this.log.debug(
+            `Admin message received: command=${obj.command}, from=${obj.from || 'unknown'}, callback=${Boolean(obj.callback)}`,
         );
+
+        if (obj.command === 'clearDiscoveryResults') {
+            let language = 'en';
+            try {
+                const systemConfig = await this.getForeignObjectAsync('system.config');
+                language = systemConfig?.common?.language || 'en';
+            } catch {
+                // keep English
+            }
+            await this.setState('discovery.resultsData', '', true);
+            await this.setState(DISCOVERY_STATE_ID, createDiscoveryHtml(null, new Set(), language), true);
+            if (obj.callback) {
+                this.sendTo(obj.from, obj.command, {}, obj.callback);
+            }
+            return;
+        }
+
+        if (!obj.callback) {
+            this.log.warn(`Admin command "${obj.command}" arrived without a callback; cannot return a response.`);
+            return;
+        }
+
+        if (obj.command !== 'discoverPrinters') {
+            return;
+        }
+
+        if (this.discoveryInProgress) {
+            this.sendTo(obj.from, obj.command, { error: 'A network scan is already running.' }, obj.callback);
+            return;
+        }
+
+        this.discoveryInProgress = true;
+        try {
+            this.log.info('Searching the local network for BambuLab printers (SSDP/UDP)...');
+            this.log.debug('Discovery request accepted; starting UDP scan with a 10-second timeout.');
+            const discovered = await discoverPrinters({ timeoutMs: 10000 });
+            // Read the latest persisted instance configuration. The adapter's
+            // in-memory this.config can be stale if the user saved settings while
+            // this instance was already running; returning that stale snapshot to
+            // Admin would overwrite newer table values during discovery.
+            let currentConfig = this.config;
+            try {
+                const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);
+                if (instanceObject?.native && typeof instanceObject.native === 'object') {
+                    currentConfig = instanceObject.native;
+                }
+            } catch (error) {
+                this.log.debug(
+                    `Could not read latest saved instance configuration for discovery: ${error.message || error}`,
+                );
+            }
+
+            const configuredPrinters = Array.isArray(currentConfig.printers)
+                ? currentConfig.printers.filter(item => item && typeof item === 'object')
+                : [];
+
+            // Preserve a legacy single-printer config when the table is empty.
+            if (!configuredPrinters.length && currentConfig.host && currentConfig.serial && currentConfig.Password) {
+                configuredPrinters.push({
+                    name: currentConfig.printerName || currentConfig.printerModel || currentConfig.serial,
+                    host: currentConfig.host,
+                    serial: currentConfig.serial,
+                    Password: currentConfig.Password,
+                    printerModel: currentConfig.printerModel || '',
+                    requestInterval: currentConfig.requestInterval || 300,
+                });
+            }
+
+            const knownSerials = new Set(
+                configuredPrinters
+                    .map(item =>
+                        String(item.serial || '')
+                            .trim()
+                            .toUpperCase(),
+                    )
+                    .filter(Boolean),
+            );
+
+            // Discovery is display-only: do not append rows, alter adapter config,
+            // save settings, or send any access token back to Admin.
+            this.lastDiscoveryResult = discovered.length
+                ? `Found ${discovered.length} BambuLab printer(s). Discovery data is displayed separately; add printers manually and enter each access token yourself.`
+                : 'No BambuLab printer was detected. Check that the printer and ioBroker are on the same LAN/VLAN and that UDP discovery traffic is allowed.';
+
+            this.log.info(
+                `Network discovery completed: ${discovered.length} printer(s) found. Returning display-only discovery results.`,
+            );
+            let language = 'en';
+            try {
+                const systemConfig = await this.getForeignObjectAsync('system.config');
+                language = systemConfig?.common?.language || 'en';
+            } catch {
+                // keep English
+            }
+            const scannedAt = new Date();
+            await this.setState(
+                'discovery.resultsData',
+                JSON.stringify({ printers: discovered, scannedAt: scannedAt.toISOString() }),
+                true,
+            );
+            await this.setState(
+                DISCOVERY_STATE_ID,
+                createDiscoveryHtml(discovered, knownSerials, language, scannedAt),
+                true,
+            );
+            const discoveryResponse = createAdminDiscoveryResponse();
+            this.sendTo(obj.from, obj.command, discoveryResponse, obj.callback);
+        } catch (error) {
+            this.lastDiscoveryResult = `Network discovery failed: ${error.message || error}`;
+            this.log.warn(this.lastDiscoveryResult);
+            this.sendTo(obj.from, obj.command, { error: this.lastDiscoveryResult }, obj.callback);
+        } finally {
+            this.discoveryInProgress = false;
+        }
     }
 
     async onStateChange(id, state) {
+        const printerId = getPrinterIdFromStateId(id, this.namespace, [...this.printers.keys()]);
+        if (!printerId) {
+            return;
+        }
+        return this.printers.get(printerId).handlePrinterStateChange(id, state);
+    }
+
+    async handlePrinterStateChange(id, state) {
         if (state && state.val != null) {
             // Only act on trigger if value is not Acknowledged
             if (!state.ack) {
-                console.debug(`${id} | ${state.val}`);
+                this.log.debug(`${id} | ${state.val}`);
                 let msg;
                 const checkID = id.split('.');
 
@@ -798,12 +1263,12 @@ class Bambulab extends utils.Adapter {
                         // Check if this G-code command should be blocked during printing
                         if (this.shouldBlockGcodeCommand(state.val)) {
                             this.log.warn(
-                                `Blocked dangerous G-code command "${state.val}" during active printing/working state (stg_cur: ${currentPrintingState}). Command ignored for safety.`,
+                                `Blocked dangerous G-code command "${state.val}" during active printing/working state (stg_cur: ${this.currentPrintingState}). Command ignored for safety.`,
                             );
                             return; // Exit without sending the command
                         }
 
-                        msg = msg = {
+                        msg = {
                             print: {
                                 command: 'gcode_line',
                                 param: `${state.val}`,
@@ -843,7 +1308,7 @@ class Bambulab extends utils.Adapter {
                         break;
                     case 'lightToolHeadLogo':
                         if (state.val === true) {
-                            msg = msg = {
+                            msg = {
                                 print: {
                                     command: 'gcode_line',
                                     param: `M960 S5 P1 \n`,
@@ -851,7 +1316,7 @@ class Bambulab extends utils.Adapter {
                                 },
                             };
                         } else if (state.val === false) {
-                            msg = msg = {
+                            msg = {
                                 print: {
                                     command: 'gcode_line',
                                     param: `M960 S5 P0 \n`,
@@ -887,80 +1352,114 @@ class Bambulab extends utils.Adapter {
                             },
                         };
                         break;
-                    case 'fanSpeedChamber':
+                    case 'fanSpeedChamber': {
+                        const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P3 S${state.val * 2.55} \n`,
+                                param: `M106 P3 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
-
                         break;
-                    case 'spd_lvl':
+                    }
+                    case 'spd_lvl': {
+                        const speedLevel = this.validateNumericControl(state.val, 'print speed', 1, 4, true);
+                        if (speedLevel === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'print_speed',
-                                param: `${state.val} \n`,
+                                param: `${speedLevel} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
-                    case 'bed_target_temper':
+                    }
+                    case 'bed_target_temper': {
+                        const temperature = this.validateNumericControl(state.val, 'bed temperature', 0, 120);
+                        if (temperature === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M140 S${state.val} \n`,
+                                param: `M140 S${temperature} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
-                    case 'nozzle_target_temper':
+                    }
+                    case 'nozzle_target_temper': {
+                        const temperature = this.validateNumericControl(state.val, 'nozzle temperature', 0, 350);
+                        if (temperature === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M104 S${state.val} \n`,
+                                param: `M104 S${temperature} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
-                    case 'big_fan1_speed':
+                    }
+                    case 'big_fan1_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'auxiliary fan', 0, 100);
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P2 S${state.val * 2.55} \n`,
+                                param: `M106 P2 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
-                    case 'big_fan2_speed':
+                    }
+                    case 'big_fan2_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'chamber fan', 0, 100);
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P3 S${state.val * 2.55} \n`,
+                                param: `M106 P3 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
-                    case 'cooling_fan_speed':
+                    }
+                    case 'cooling_fan_speed': {
+                        const fanValue = this.validateNumericControl(state.val, 'cooling fan', 0, 100);
+                        if (fanValue === null) {
+                            return;
+                        }
                         msg = {
                             print: {
                                 command: 'gcode_line',
-                                param: `M106 P1 S${state.val * 2.55} \n`,
+                                param: `M106 P1 S${fanValue * 2.55} \n`,
                                 sequence_id: '0',
                             },
                         };
                         break;
+                    }
                     case 'homing':
                         // Block homing (G28) command during active printing/working state
                         if (this.isPrintingOrActiveState()) {
                             this.log.warn(
-                                `Blocked homing command (G28) during active printing/working state (stg_cur: ${currentPrintingState}). Command ignored for safety.`,
+                                `Blocked homing command (G28) during active printing/working state (stg_cur: ${this.currentPrintingState}). Command ignored for safety.`,
                             );
                             return; // Exit without sending the command
                         }
 
-                        msg = msg = {
+                        msg = {
                             print: {
                                 command: 'gcode_line',
                                 param: 'G28 \n',
@@ -989,8 +1488,8 @@ if (require.main !== module) {
     /**
      * @param {Partial<utils.AdapterOptions>} [options] - Adapter configuration options
      */
-    module.exports = options => new Bambulab(options);
+    module.exports = options => new BambulabConnect(options);
 } else {
     // otherwise start the instance directly
-    new Bambulab();
+    new BambulabConnect();
 }
