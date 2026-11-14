@@ -1,10 +1,10 @@
 # Projektstatus – ioBroker BambuLab Connect
 
 ## Geprüfter Gesamtstand – 14.11.2026, 02:57 MEZ
-- Maßgeblicher Produktionsbranch: `main`; aktueller Head `e7c6410da9ef090a4c5ac552c90cd25a76b8177f` (Dokumentationscommit).
+- Maßgeblicher Produktionsbranch: `main`; Zuletzt vor dieser Statuspflege geprüfter Head `e7c6410da9ef090a4c5ac552c90cd25a76b8177f` (Dokumentationscommit).
 - Letzter auf `main` übernommener Laufzeitcode-Commit: `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
 - Der Nutzer hat den stabilen Betrieb mit drei Druckern bestätigt.
-- `feature/multi-printer` ist seit der Übernahme weitergelaufen und steht getrennt auf Head `692fafb12987d763f354cec47a7c23118ceb428f`. Der Feature-Zweig enthält den zusätzlichen Fix `1f0edbcc5505a2a22ffe368633fedf3c9b1f3dd5` für das Firmwareattribut `filam_bak` und den Pfad der Warnungsspeicherung; dieser Fix ist **nicht** in `main` übernommen. Aktueller Feature-Workflow #178 / Run `43492101514`: **completed / success**.
+- `feature/multi-printer` ist seit der Übernahme weitergelaufen und steht getrennt; letzter geprüfter Feature-/Workflow-Head vor dessen Statuspflege: `692fafb12987d763f354cec47a7c23118ceb428f`. Der Feature-Zweig enthält den zusätzlichen Fix `1f0edbcc5505a2a22ffe368633fedf3c9b1f3dd5` für das Firmwareattribut `filam_bak` und den Pfad der Warnungsspeicherung; dieser Fix ist **nicht** in `main` übernommen. Aktueller Feature-Workflow #178 / Run `43492101514`: **completed / success**.
 - Auf `feature/multi-printer` ist macOS vorübergehend aus der Testmatrix genommen; Ubuntu/Windows mit Node 22/24 und Lint bleiben aktiv. Der aktuelle Feature-Run bestätigt daher keine macOS-Prüfung.
 - Der zuvor dokumentierte CPU-Optimierungsbranch `dev/bambulab-connect-cpu` ist in der aktuellen GitHub-Branchliste nicht vorhanden. Ob er gelöscht, umbenannt oder anderweitig übernommen wurde, ist ungeklärt; nicht als aktiven Branch voraussetzen.
 - Die historische Aussage, `feature/multi-printer` zeige auf denselben Commit wie `main`, galt nur unmittelbar nach der Promotion und ist inzwischen überholt.
