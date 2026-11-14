@@ -1,13 +1,13 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Geprüfter Gesamtstand – 13.11.2026 (vormittags, MEZ)
-- Maßgeblicher Branch: `main`, zuletzt geprüfter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**.
-- Der stabile Mehrdrucker-Stand ist bereits nach `main` übernommen; `feature/multi-printer` zeigt auf denselben Commit.
-- GitHub Actions „Test and Release“ #171 (Run `43382009645`) auf `main`: **completed / success**. Zusatzlauf #172 auf `feature/multi-printer` ebenfalls erfolgreich.
-- Nutzer bestätigt stabilen Betrieb mit drei Druckern.
-- CPU-Optimierung bleibt getrennte Arbeit auf `dev/bambulab-connect-cpu` und ist nicht Bestandteil des stabilen `main`-Stands.
-- Historische Formulierungen „wird jetzt nach main übernommen“ sind überholt; die Übernahme ist abgeschlossen.
-
+## Geprüfter Gesamtstand – 14.11.2026, 02:57 MEZ
+- Maßgeblicher Produktionsbranch: `main`; aktueller Head `e7c6410da9ef090a4c5ac552c90cd25a76b8177f` (Dokumentationscommit).
+- Letzter auf `main` übernommener Laufzeitcode-Commit: `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
+- Der Nutzer hat den stabilen Betrieb mit drei Druckern bestätigt.
+- `feature/multi-printer` ist seit der Übernahme weitergelaufen und steht getrennt auf Head `692fafb12987d763f354cec47a7c23118ceb428f`. Der Feature-Zweig enthält den zusätzlichen Fix `1f0edbcc5505a2a22ffe368633fedf3c9b1f3dd5` für das Firmwareattribut `filam_bak` und den Pfad der Warnungsspeicherung; dieser Fix ist **nicht** in `main` übernommen. Aktueller Feature-Workflow #178 / Run `43492101514`: **completed / success**.
+- Auf `feature/multi-printer` ist macOS vorübergehend aus der Testmatrix genommen; Ubuntu/Windows mit Node 22/24 und Lint bleiben aktiv. Der aktuelle Feature-Run bestätigt daher keine macOS-Prüfung.
+- Der zuvor dokumentierte CPU-Optimierungsbranch `dev/bambulab-connect-cpu` ist in der aktuellen GitHub-Branchliste nicht vorhanden. Ob er gelöscht, umbenannt oder anderweitig übernommen wurde, ist ungeklärt; nicht als aktiven Branch voraussetzen.
+- Die historische Aussage, `feature/multi-printer` zeige auf denselben Commit wie `main`, galt nur unmittelbar nach der Promotion und ist inzwischen überholt.
 
 **Stand: 13.11.2026**  
 **Adapterversion im Paket: 0.4.10**  
@@ -41,7 +41,7 @@ Eigenständiger ioBroker-Adapter für BambuLab-Drucker unter dem Repository und 
 
 ## Noch offene bzw. getrennte Arbeiten
 
-- CPU-Baseline und mögliche Optimierungen laufen auf dem separaten Branch `dev/bambulab-connect-cpu`; dieser Branch ist nicht Bestandteil der hier beschriebenen stabilen Mehrdrucker-Übernahme.
+- CPU-Baseline und mögliche Optimierungen waren zuvor dem Branch `dev/bambulab-connect-cpu` zugeordnet. Dieser Branch ist in der aktuellen GitHub-Branchliste nicht sichtbar; Status und Fortbestand müssen vor einer Wiederaufnahme geklärt werden.
 - Weitere Firmware-/AMS-Beobachtungen nur anhand realer Gerätedaten ergänzen.
 - Nach der Übernahme nach `main` bleibt `main` der maßgebliche Haupt- und Installationsbranch; weitere Entwicklung erfolgt dort bzw. über darauf basierende Feature-Branches.
 
