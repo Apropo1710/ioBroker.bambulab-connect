@@ -1,11 +1,11 @@
 # Projektstatus – ioBroker BambuLab Connect
 
 ## Aktueller Feature-Branch-Stand – 14.11.2026, 02:57 MEZ
-- Aktiver Feature-Branch: `feature/multi-printer`; aktueller Head `692fafb12987d763f354cec47a7c23118ceb428f`; Paketversion **0.4.10**.
+- Aktiver Feature-Branch: `feature/multi-printer`; zuletzt geprüfter Code-/Workflow-Head vor dieser Statuspflege `692fafb12987d763f354cec47a7c23118ceb428f`; Paketversion **0.4.10**.
 - Letzter Laufzeitcode-Fix: `1f0edbcc5505a2a22ffe368633fedf3c9b1f3dd5` – ergänzt das tatsächlich vom Drucker gemeldete Feld `filam_bak` (zusätzlich bleibt `filament_bak` als Alias erhalten) und speichert `warnMessages.json` im Instanz-Datenverzeichnis statt relativ zum Prozess-Arbeitsverzeichnis.
 - Die zuvor beobachteten Firmware-Metadatenfelder `cur_release_type`, `new_release_type`, `cur_ver` und `new_ver` sind ebenfalls in `state_attr.js` definiert. Der frühere Warnungspunkt ist damit im aktuellen Feature-Code adressiert; eine erneute Live-Beobachtung am Drucker nach diesem Fix steht noch aus.
 - Regressionstest für das exakte Feld `filam_bak` und den kompatiblen Alias ergänzt.
-- Aktueller Workflow #178 / Run `43492101514` für Head `692fafb`: **completed / success**. Der Workflow prüft Ubuntu und Windows mit Node 22/24 sowie Lint; macOS ist auf Nutzerwunsch vorübergehend pausiert.
+- Workflow #178 / Run `43492101514` für Code-/Workflow-Head `692fafb`: **completed / success**. Der Workflow prüft Ubuntu und Windows mit Node 22/24 sowie Lint; macOS ist auf Nutzerwunsch vorübergehend pausiert.
 - Der Feature-Fix ist **nicht** nach `main` übernommen. `main` bleibt der hardwarebestätigte stabile Stand auf Version 0.4.10 / Code-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`.
 - Keine Versionsänderung und kein Release durch diese Feature-Änderungen.
 - Der zuvor erwähnte CPU-Branch `dev/bambulab-connect-cpu` ist in der aktuellen Remote-Branchliste nicht sichtbar; sein Status ist ungeklärt.
