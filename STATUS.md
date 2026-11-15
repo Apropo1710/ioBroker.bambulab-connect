@@ -1,13 +1,14 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Geprüfter Gesamtstand – 14.11.2026, 02:57 MEZ
-- Maßgeblicher Produktionsbranch: `main`; Zuletzt vor dieser Statuspflege geprüfter Head `e7c6410da9ef090a4c5ac552c90cd25a76b8177f` (Dokumentationscommit).
-- Letzter auf `main` übernommener Laufzeitcode-Commit: `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
-- Der Nutzer hat den stabilen Betrieb mit drei Druckern bestätigt.
-- `feature/multi-printer` ist seit der Übernahme weitergelaufen und steht getrennt; letzter geprüfter Feature-/Workflow-Head vor dessen Statuspflege: `692fafb12987d763f354cec47a7c23118ceb428f`. Der Feature-Zweig enthält den zusätzlichen Fix `1f0edbcc5505a2a22ffe368633fedf3c9b1f3dd5` für das Firmwareattribut `filam_bak` und den Pfad der Warnungsspeicherung; dieser Fix ist **nicht** in `main` übernommen. Aktueller Feature-Workflow #178 / Run `43492101514`: **completed / success**.
-- Auf `feature/multi-printer` ist macOS vorübergehend aus der Testmatrix genommen; Ubuntu/Windows mit Node 22/24 und Lint bleiben aktiv. Der aktuelle Feature-Run bestätigt daher keine macOS-Prüfung.
-- Der zuvor dokumentierte CPU-Optimierungsbranch `dev/bambulab-connect-cpu` ist in der aktuellen GitHub-Branchliste nicht vorhanden. Ob er gelöscht, umbenannt oder anderweitig übernommen wurde, ist ungeklärt; nicht als aktiven Branch voraussetzen.
-- Die historische Aussage, `feature/multi-printer` zeige auf denselben Commit wie `main`, galt nur unmittelbar nach der Promotion und ist inzwischen überholt.
+## Geprüfter Gesamtstand – 15.11.2026, 03:05 MEZ
+- Produktionsbranch `main`: aktueller Head `8dffe2bd9bb75c1435e65a8d6017882e9375392c` (Dokumentationscommit); letzter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
+- Der Nutzer hat den stabilen Betrieb mit drei Druckern bestätigt. Dieser Hardware-Nachweis bezieht sich auf den Main-Stand, nicht auf die noch offenen PR-Änderungen.
+- Offener PR [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7), Branch `feature/multi-printer`, Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`: sechs Commits vor `main`, null dahinter. Push-Run `43593649645` und PR-Run `43593653360`: **completed / success**. Enthält u. a. `filam_bak` samt Alias, H2C-/AMS-Telemetriedefinitionen und Speicherung von `warnMessages.json` im absoluten Instanz-Datenverzeichnis. Nicht nach `main` übernommen; kein Release und noch keine erneute Live-Beobachtung nach diesen Änderungen.
+- Offener PR [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8), Branch `fix/missing-ams-state-attributes`, Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`: ein Commit vor `main`. PR-Run `43616767673`: **completed / success**. Ergänzt State-Definitionen für rohe CFS-Metadaten (`cfs`) und AMS-Trockner-Ablehnungsgründe (`dry_sf_reason`); beide bleiben JSON-Text und werden nicht zusätzlich decodiert. Nicht nach `main` übernommen.
+- Auf `feature/multi-printer` ist macOS vorübergehend aus der Testmatrix genommen; die jüngsten Läufe prüfen Ubuntu und Windows mit Node 22/24 sowie Lint.
+- Der frühere CPU-Branch `dev/bambulab-connect-cpu` ist in der aktuellen Remote-Branchliste nicht sichtbar; Status/Fortbestand ungeklärt. Nicht als aktiven Branch voraussetzen.
+- `main` bleibt der stabile Installationsbranch. Keine PR-Änderung wird durch diese Statuspflege gemergt.
+
 
 **Stand: 13.11.2026**  
 **Adapterversion im Paket: 0.4.10**  
