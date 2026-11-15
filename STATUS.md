@@ -1,7 +1,7 @@
 # Projektstatus – ioBroker BambuLab Connect
 
 ## Aktueller Feature-Branch-Stand – 15.11.2026, 03:05 MEZ
-- Branch `feature/multi-printer`, aktueller Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf` (Merge von `main) in den Feature-Branch); Paketversion **0.4.10**.
+- Branch `feature/multi-printer`, aktueller Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf` (Merge von `main` in den Feature-Branch); Paketversion **0.4.10**.
 - Pull Request [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) ist offen, nicht gemergt; der Branch liegt sechs Commits vor `main`. Push-Run `43593649645` und PR-Run `43593653360`: **completed / success**.
 - Enthalten sind die Korrektur des tatsächlichen Felds `filam_bak` samt kompatiblem Alias `filament_bak`, zusätzliche H2C-/AMS-Telemetriedefinitionen sowie die Ablage von `warnMessages.json` im absoluten Instanz-Datenverzeichnis.
 - Der Workflow prüft Ubuntu und Windows mit Node 22/24 sowie Lint; macOS ist auf Nutzerwunsch vorübergehend pausiert.
