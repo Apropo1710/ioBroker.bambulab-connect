@@ -1,5 +1,13 @@
 # Projektstatus – ioBroker BambuLab Connect
 
+## Separater Fix-Branch – 15.11.2026, 03:05 MEZ
+- Branch `fix/missing-ams-state-attributes`, aktueller Code-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; Paketversion bleibt **0.4.10**.
+- Pull Request [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8) ist offen und nicht gemergt; der Branch liegt einen Commit vor `main`.
+- PR-Workflow „Test and Release“ Run `43616767673`: **completed / success**.
+- Der Fix ergänzt Definitionen für `cfs` (rohe CFS-Metadaten) und `dry_sf_reason` (AMS-Trockner-Ablehnungsgründe). Beide Werte bleiben JSON-Text; der Adapter decodiert sie mit diesem Fix nicht zusätzlich.
+- Kein Release, keine Versionsänderung und keine Übernahme nach `main`. Hardwarevalidierung ist nicht belegt.
+
+
 ## Geprüfter Gesamtstand – 14.11.2026, 02:57 MEZ
 - Maßgeblicher Produktionsbranch: `main`; Zuletzt vor dieser Statuspflege geprüfter Head `e7c6410da9ef090a4c5ac552c90cd25a76b8177f` (Dokumentationscommit).
 - Letzter auf `main` übernommener Laufzeitcode-Commit: `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
