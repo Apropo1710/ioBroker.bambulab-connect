@@ -1,5 +1,13 @@
 # Projektstatus – ioBroker BambuLab Connect
 
+## Aktueller Fix-Branch-Abgleich – 16.11.2026, 03:02 MEZ
+
+- Aktueller Branch-Head: `7a3b2741ae904b8046fe479363ebc0f575406419` (Dokumentationscommit); Laufzeitcode-Head: `fc88de9b188a00a3509edf08b9aa5f68deebe01b`. Paketversion bleibt **0.4.10**.
+- PR #8 ist offen, nicht gemergt und laut aktueller PR-Abfrage mergeable. Der Branch liegt **2 Commits vor und 0 hinter `main`** (nicht mehr ein Commit voraus).
+- Run `43616767673`: Lint und alle Ubuntu/Windows/macOS-Testjobs mit Node 22/24 **completed / success**; Deploy erwartungsgemäß übersprungen.
+- Der Fix ergänzt Definitionen für rohe CFS-Metadaten (`cfs`) und AMS-Trockner-Ablehnungsgründe (`dry_sf_reason`). Kein Release, keine Versionsänderung und keine bestätigte Hardwarevalidierung.
+
+
 ## Separater Fix-Branch – 15.11.2026, 03:05 MEZ
 - Branch `fix/missing-ams-state-attributes`, aktueller Code-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; Paketversion bleibt **0.4.10**.
 - Pull Request [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8) ist offen und nicht gemergt; der Branch liegt einen Commit vor `main`.
