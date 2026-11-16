@@ -3,8 +3,8 @@
 ## Verifizierter Abgleich – 16.11.2026, 03:03 MEZ
 
 - Produktionsbranch `main`: Head `8dffe2bd9bb75c1435e65a8d6017882e9375392c` (Dokumentation), Laufzeitcode `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Paketversion **0.4.10**. Run `43382009645`: Check/Lint und alle sechs Ubuntu-/Windows-/macOS-Testjobs mit Node 22/24 **success**, Deploy übersprungen. Nutzer bestätigt stabilen Betrieb mit drei Druckern.
-- PR #7 / `feature/multi-printer`: aktueller Branch-Head `38745b03c5b966b5bf21e265b3b049f4a48304af`, Code-Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`; **9 ahead / 0 behind**, offen und mergeable. Run `43492101514` erfolgreich für Lint und Ubuntu/Windows Node 22/24; Deploy übersprungen. macOS pausiert. Neue Änderungen noch nicht erneut am Drucker live beobachtet.
-- PR #8 / `fix/missing-ams-state-attributes`: aktueller Branch-Head `7a3b2741ae904b8046fe479363ebc0f575406419`, Code-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; **2 ahead / 0 behind**, offen und mergeable. Run `43616767673`: Lint und alle Ubuntu/Windows/macOS-Tests mit Node 22/24 erfolgreich; Deploy übersprungen. Kein Release und keine Hardwarevalidierung.
+- PR #7 / `feature/multi-printer`: aktueller Branch-Head nach der Statuspflege `10c9ad097f1eb01eec75b4026f68b9de58b4f673`, Code-Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`; **9 ahead / 0 behind**, offen und mergeable. Run `43492101514` erfolgreich für Lint und Ubuntu/Windows Node 22/24; Deploy übersprungen. macOS pausiert. Neue Änderungen noch nicht erneut am Drucker live beobachtet.
+- PR #8 / `fix/missing-ams-state-attributes`: aktueller Branch-Head nach der Statuspflege `50d2c22381d31531376a8cc39be37271beb7ec87`, Code-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; **2 ahead / 0 behind**, offen und mergeable. Run `43616767673`: Lint und alle Ubuntu/Windows/macOS-Tests mit Node 22/24 erfolgreich; Deploy übersprungen. Kein Release und keine Hardwarevalidierung.
 - PR #9 (diese Statusdokumentation) bleibt offen und mergeable. Der frühere CPU-Branch `dev/bambulab-connect-cpu` ist weiterhin nicht in der Remote-Branchliste sichtbar; Fortbestand ungeklärt. Keine PR-Übernahme oder Release durch diese Pflege.
 
 
