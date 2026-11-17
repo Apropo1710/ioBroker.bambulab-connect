@@ -1,12 +1,13 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Aktueller Feature-Branch-Abgleich – 16.11.2026, 03:02 MEZ
+## Aktueller Feature-Branch-Abgleich – 17.11.2026, 02:56 MEZ
 
-- Aktueller Branch-Head: `38745b03c5b966b5bf21e265b3b049f4a48304af` (Dokumentationscommit); letzter Laufzeitcode-Head: `dbbfeaad6f25f42e0b70c04c14592afc43affecf`. Paketversion **0.4.10**.
-- PR #7 ist offen, nicht gemergt und laut aktueller PR-Abfrage mergeable. Der Branch liegt **9 Commits vor und 0 hinter `main`** (nicht mehr sechs Commits voraus).
-- Run `43492101514`: alle Jobs für Lint sowie Ubuntu/Windows mit Node 22/24 **completed / success**; Deploy erwartungsgemäß übersprungen. macOS ist in diesem Branch weiterhin vorübergehend aus der Matrix genommen.
-- Die Änderungen für `filam_bak`/Alias und die Warnungsspeicherung sind nicht nach `main` übernommen. Nach diesen Änderungen fehlt weiterhin eine erneute Live-Beobachtung am Drucker. Kein Versionsbump und kein Release.
-
+- Branch `feature/multi-printer`: aktueller Head vor diesem Statusupdate `10c9ad097f1eb01eec75b4026f68b9de58b4f673`; letzter Laufzeitcode-Head laut Branchhistorie `dbbfeaad6f25f42e0b70c04c14592afc43affecf`. Paketversion **0.4.10**.
+- PR [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) ist offen, nicht gemergt und mergeable/clean; Vergleich zu `main`: **10 Commits voraus / 0 zurück**.
+- Letzter bestätigter Branchlauf #178 / Run `43492101514` für Branchcommit `692fafb12987d763f354cec47a7c23118ceb428f`: **completed / success**. Lint sowie Ubuntu/Windows mit Node 22/24 erfolgreich; macOS ist auf diesem Feature-Branch vorübergehend pausiert. Spätere Branchänderungen sind Dokumentation.
+- Der Branch enthält die Korrektur des tatsächlichen Firmwarefelds `filam_bak` samt kompatiblem Alias und die Ablage von `warnMessages.json` im absoluten Instanz-Datenverzeichnis. Diese Änderungen sind nicht nach `main` übernommen.
+- Eine erneute Live-Beobachtung am Drucker nach diesen Änderungen fehlt. Kein Release und kein Versionsbump durch PR #7.
+- Stabiler `main`-Stand bleibt **0.4.10**; der Nutzer hat den Main-Stand mit drei Druckern bestätigt.
 
 ## Aktueller Feature-Branch-Stand – 15.11.2026, 03:05 MEZ
 - Branch `feature/multi-printer`, letzter Code-Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`; aktueller Dokumentations-Head vor diesem Commit `55b291fedcfa50c72e10add56eee9f688e8db8b6` (Statuskorrektur nach Merge von `main`); Paketversion **0.4.10**.
