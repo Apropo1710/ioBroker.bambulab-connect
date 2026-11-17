@@ -1,12 +1,12 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Aktueller Fix-Branch-Abgleich – 16.11.2026, 03:02 MEZ
+## Aktueller Fix-Branch-Abgleich – 17.11.2026, 02:56 MEZ
 
-- Aktueller Branch-Head: `7a3b2741ae904b8046fe479363ebc0f575406419` (Dokumentationscommit); Laufzeitcode-Head: `fc88de9b188a00a3509edf08b9aa5f68deebe01b`. Paketversion bleibt **0.4.10**.
-- PR #8 ist offen, nicht gemergt und laut aktueller PR-Abfrage mergeable. Der Branch liegt **2 Commits vor und 0 hinter `main`** (nicht mehr ein Commit voraus).
-- Run `43616767673`: Lint und alle Ubuntu/Windows/macOS-Testjobs mit Node 22/24 **completed / success**; Deploy erwartungsgemäß übersprungen.
-- Der Fix ergänzt Definitionen für rohe CFS-Metadaten (`cfs`) und AMS-Trockner-Ablehnungsgründe (`dry_sf_reason`). Kein Release, keine Versionsänderung und keine bestätigte Hardwarevalidierung.
-
+- Branch `fix/missing-ams-state-attributes`: aktueller Head vor diesem Statusupdate `50d2c22381d31531376a8cc39be37271beb7ec87`; letzter Laufzeitcode-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`. Paketversion bleibt **0.4.10**.
+- PR [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8) ist offen, nicht gemergt und mergeable/clean; Vergleich zu `main`: **3 Commits voraus / 0 zurück**.
+- PR-Run #182 / Run `43616767673` für den Laufzeitcode-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`: **completed / success**; Lint und Ubuntu/Windows/macOS mit Node 22/24 erfolgreich, Deploy erwartungsgemäß übersprungen.
+- Der Fix ergänzt State-Definitionen für rohe CFS-Metadaten (`cfs`) und AMS-Trockner-Ablehnungsgründe (`dry_sf_reason`). Beide bleiben JSON-Text und werden nicht zusätzlich decodiert.
+- Kein Release, keine Versionsänderung, keine Übernahme nach `main`; Hardwarevalidierung ist nicht belegt.
 
 ## Separater Fix-Branch – 15.11.2026, 03:05 MEZ
 - Branch `fix/missing-ams-state-attributes`, aktueller Code-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; Paketversion bleibt **0.4.10**.
