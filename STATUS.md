@@ -1,13 +1,14 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Verifizierter Abgleich – 17.11.2026, 02:56 MEZ
+## Verifizierter Abgleich – 18.11.2026, 03:09 MEZ
 
-- Produktionsbranch `main`: Head `8dffe2bd9bb75c1435e65a8d6017882e9375392c` (Dokumentation), letzter übernommener Laufzeitcode `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Paketversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**. Nutzer bestätigt stabilen Betrieb mit drei Druckern.
-- PR [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) / `feature/multi-printer`: Head nach Statuspflege `b6f3676c461de8d9c6fe53ea788e442796edc0b7`, Laufzeitcode-Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`; **10 ahead / 0 behind**, offen und mergeable/clean. Run #178 / `43492101514` für Branchcommit `692fafb12987d763f354cec47a7c23118ceb428f`: **success** (Lint, Ubuntu/Windows Node 22/24; macOS in diesem Branch pausiert). Nachfolgende Commits sind Dokumentation.
-- PR [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8) / `fix/missing-ams-state-attributes`: Head nach Statuspflege `864c5f293c3ebe34c68e94da6c5083db2803d461`, Laufzeitcode-Head `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; **3 ahead / 0 behind**, offen. Run #182 / `43616767673` für den Code-Head: **completed / success** (Lint und Ubuntu/Windows/macOS Node 22/24; Deploy übersprungen). Nach dem Dokumentationsupdate wurde PR #8 erneut geprüft: **mergeable: true / clean**.
-- PR [#9 – diese Statusdokumentation](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/9) bleibt offen und mergeable/clean; die Aktualisierung wird auf dem vorhandenen Head-Branch `docs/status-refresh-2026-11-15` fortgeführt. Kein zweiter Dokumentations-PR und kein automatisches Merge.
-- Beide Feature-PRs sind nicht gemergt, haben keinen Release ausgelöst und sind nach den Änderungen noch nicht erneut am Drucker live bestätigt. `main` bleibt der stabile Installationsbranch.
-- Der frühere CPU-Branch `dev/bambulab-connect-cpu` ist in der Remote-Branchliste nicht vorhanden. Ob gelöscht oder umbenannt, bleibt ungeklärt.
+- Produktionsbranch `main`: aktueller Head `8dffe2bd9bb75c1435e65a8d6017882e9375392c` (Dokumentation), letzter übernommener Laufzeitcode `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Paketversion **0.4.10**. „Test and Release“ Run `43405722766` für den nachfolgenden Main-Stand war **completed / success**. Nutzer bestätigt stabilen Betrieb mit drei Druckern.
+- PR [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) / `feature/multi-printer`: aktueller Head `b6f3676c461de8d9c6fe53ea788e442796edc0b7`, letzter Laufzeitcode-Commit `b7e842406b66fb1575e3eb9f69bfef66b886271f`; **11 ahead / 0 behind**, offen und mergeable/clean. Test and Release #179 / Run `43592404382` für exakt den Code-Commit: **completed / success**. macOS ist in diesem Feature-Branch vorübergehend aus der Testmatrix genommen.
+- PR [#8](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/8) / `fix/missing-ams-state-attributes`: aktueller Head `864c5f293c3ebe34c68e94da6c5083db2803d461`, Laufzeitcode-Commit `fc88de9b188a00a3509edf08b9aa5f68deebe01b`; **4 ahead / 0 behind**, offen und mergeable/clean. PR-Run #182 / `43616767673`: **completed / success**.
+- PR [#9 – Statusdokumentation](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/9) bleibt offen und mergeable/clean. Diese Aktualisierung erfolgt auf dem bestehenden Head-Branch `docs/status-refresh-2026-11-15`; kein zweiter Dokumentations-PR und kein automatisches Merge.
+- PRs #7 und #8 sind nicht gemergt. Die Änderungen sind nicht Teil von `main`; eine erneute Live-Beobachtung am Drucker nach diesen Änderungen fehlt. Kein neues Release und kein Versionsbump.
+- Der frühere CPU-Branch `dev/bambulab-connect-cpu` ist in der aktuellen Remote-Branchliste nicht vorhanden. Ob gelöscht oder umbenannt, bleibt ungeklärt.
+
 
 ## Geprüfter Gesamtstand – 15.11.2026, 03:05 MEZ
 - Produktionsbranch `main`: aktueller Head `8dffe2bd9bb75c1435e65a8d6017882e9375392c` (Dokumentationscommit); letzter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**. „Test and Release“ Run `43382009645`: **completed / success**.
