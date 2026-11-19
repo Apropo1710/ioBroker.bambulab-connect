@@ -81,10 +81,14 @@ describe('firmware update detection', () => {
             ],
         });
 
+        expect(result).to.not.equal(null);
+        if (!result) {
+            return;
+        }
         expect(result.firmware_update_available).to.equal(true);
         expect(result.ams_firmware_update_available).to.equal(true);
         expect(result.ams_firmware_update_count).to.equal(4);
-        expect(JSON.parse(result.ams_firmware_update_details)).to.deep.equal([
+        expect(JSON.parse(result.ams_firmware_update_details || '')).to.deep.equal([
             {
                 module: 'ams/0',
                 module_type: 'AMS',
@@ -161,7 +165,7 @@ describe('firmware update detection', () => {
             'firmware_current_version',
             'firmware_available_version',
         );
-        expect(amsOnly.ams_firmware_update_available).to.equal(true);
+        expect(amsOnly?.ams_firmware_update_available).to.equal(true);
         expect(deriveFirmwareUpdate({ new_ver_list: [{ name: 'ota', cur_ver: '', new_ver: '01.09.00' }] })).to.equal(
             null,
         );
@@ -172,7 +176,7 @@ describe('firmware update detection', () => {
         expect(
             deriveFirmwareUpdate({
                 new_ver_list: [{ name: 'ota', cur_ver: '01.10.00', new_ver: '01.09.99' }],
-            }).firmware_update_available,
+            })?.firmware_update_available,
         ).to.equal(false);
     });
 });

@@ -66,6 +66,23 @@ class BambulabConnect extends utils.Adapter {
         this.on('stateChange', this.onStateChange.bind(this));
         this.on('unload', this.onUnload.bind(this));
         jsonExplorer.init(this, stateAttr);
+
+        // Type declarations only (no runtime properties are created here).
+        // Printer methods run on per-printer contexts from lib/printerRuntime.js,
+        // which inherit from this adapter and set these fields themselves;
+        // lib/jsonExplorer.js initializes the state caches.
+        /** @type {string} */
+        this.printerId;
+        /** @type {string} */
+        this.printerName;
+        /** @type {boolean} */
+        this.shuttingDown;
+        /** @type {Set<string>} */
+        this.createdStructureObjects;
+        /** @type {Map<string, any>} */
+        this.lastStateValues;
+        /** @type {Record<string, any>} */
+        this.createdStatesDetails;
     }
 
     /**
@@ -117,7 +134,7 @@ class BambulabConnect extends utils.Adapter {
             const cached = await this.getStateAsync('discovery.resultsData');
             if (cached?.val) {
                 try {
-                    const data = JSON.parse(cached.val);
+                    const data = JSON.parse(/** @type {string} */ (cached.val));
                     const scannedAt = data.scannedAt ? new Date(data.scannedAt) : new Date();
                     await this.setState(
                         DISCOVERY_STATE_ID,
@@ -1158,6 +1175,7 @@ class BambulabConnect extends utils.Adapter {
             // in-memory this.config can be stale if the user saved settings while
             // this instance was already running; returning that stale snapshot to
             // Admin would overwrite newer table values during discovery.
+            /** @type {Record<string, any>} */
             let currentConfig = this.config;
             try {
                 const instanceObject = await this.getForeignObjectAsync(`system.adapter.${this.namespace}`);

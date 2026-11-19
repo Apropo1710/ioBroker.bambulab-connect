@@ -25,11 +25,9 @@ export default [
 		// you may disable some 'jsdoc' warnings - but using jsdoc is highly recommended
 		// as this improves maintainability. jsdoc warnings will not block build process.
 		rules: {
-			// 'jsdoc/require-jsdoc': 'off',
-			// 'jsdoc/require-param': 'off',
-			// 'jsdoc/require-param-description': 'off',
-			// 'jsdoc/require-returns-description': 'off',
-			// 'jsdoc/require-returns-check': 'off',
+			// This is a JavaScript project checked by TypeScript (checkJs):
+			// JSDoc @type annotations are needed and not redundant.
+			'jsdoc/check-tag-names': ['warn', { typed: false }],
 		},
 	},
 ];
