@@ -6,14 +6,14 @@ describe('State Attributes Type Compatibility', () => {
         const idAttr = stateAttr.id;
         expect(idAttr).to.exist;
         expect(idAttr.type).to.equal('mixed');
-        expect(idAttr.role).to.equal('state');
+        expect(idAttr.role).to.equal('text');
     });
 
     it('should handle mixed types for info field', () => {
         const infoAttr = stateAttr.info;
         expect(infoAttr).to.exist;
         expect(infoAttr.type).to.equal('mixed');
-        expect(infoAttr.role).to.equal('state');
+        expect(infoAttr.role).to.equal('value');
     });
 
     it('defines metadata for printer name and firmware IDs', () => {
@@ -32,7 +32,9 @@ describe('State Attributes Type Compatibility', () => {
         expect(stateAttr.state.type).to.equal('number');
 
         expect(stateAttr.diameter).to.exist;
-        expect(stateAttr.diameter.type).to.equal('number');
+        // Firmware sends the diameter as string or number; TOFLOAT normalizes it.
+        expect(stateAttr.diameter.type).to.equal('mixed');
+        expect(stateAttr.diameter.modify).to.include('TOFLOAT');
         expect(stateAttr.diameter.unit).to.equal('mm');
 
         expect(stateAttr.color).to.exist;

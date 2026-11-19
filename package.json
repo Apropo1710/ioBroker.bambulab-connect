@@ -51,6 +51,7 @@
     "statDev": "dev-server watch --noStart",
     "test:js": "mocha --config test/mocharc.custom.json \"{!(node_modules|test)/**/*.test.js,*.test.js,test/**/*.test.js,test/**/test!(PackageFiles|Startup).js}\"",
     "test:package": "mocha test/package --exit",
+    "test:unit": "npm run test:js && npm run test:package",
     "test:integration": "mocha test/integration --exit",
     "test": "npm run test:js && npm run test:package",
     "check": "tsc --noEmit -p tsconfig.check.json",

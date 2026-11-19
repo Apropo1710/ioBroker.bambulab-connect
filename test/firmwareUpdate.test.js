@@ -17,6 +17,19 @@ describe('firmware update detection', () => {
             firmware_update_available: true,
             firmware_current_version: '01.08.01',
             firmware_available_version: '01.09.00',
+            // AMS modules are reported independently of the printer OTA update.
+            ams_firmware_update_available: true,
+            ams_firmware_update_count: 1,
+            ams_firmware_update_details: JSON.stringify([
+                {
+                    module: 'ams/0',
+                    module_type: 'AMS',
+                    module_id: 0,
+                    update_available: true,
+                    current_version: '00.00.06.44',
+                    available_version: '00.00.06.49',
+                },
+            ]),
         });
     });
 
@@ -141,7 +154,14 @@ describe('firmware update detection', () => {
     });
 
     it('does not create a misleading state when the OTA version pair is missing or invalid', () => {
-        expect(deriveFirmwareUpdate({ new_ver_list: [{ name: 'ams/0', cur_ver: '1', new_ver: '2' }] })).to.equal(null);
+        // Without an OTA entry no printer firmware states are derived; AMS data stays separate.
+        const amsOnly = deriveFirmwareUpdate({ new_ver_list: [{ name: 'ams/0', cur_ver: '1', new_ver: '2' }] });
+        expect(amsOnly).to.not.have.any.keys(
+            'firmware_update_available',
+            'firmware_current_version',
+            'firmware_available_version',
+        );
+        expect(amsOnly.ams_firmware_update_available).to.equal(true);
         expect(deriveFirmwareUpdate({ new_ver_list: [{ name: 'ota', cur_ver: '', new_ver: '01.09.00' }] })).to.equal(
             null,
         );

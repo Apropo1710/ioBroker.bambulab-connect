@@ -40,9 +40,7 @@ describe('Printer telemetry folder organization', () => {
         // Reflect the actual MQTT shape: print.ams contains metadata and
         // print.ams.ams is the array of physical AMS modules.
         const result = organizeTelemetry({
-            ams: {
-                ams: { ams: units, ams_status: 1, ams_exist_bits: '3' },
-            },
+            ams: { ams: units, ams_status: 1, ams_exist_bits: '3' },
             vt_tray: { tray_type: 'PETG' },
         });
         expect(result.ams.units).to.deep.equal(units);
