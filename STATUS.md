@@ -21,19 +21,19 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 ## Tests
 
 - `npm run test:unit` (Unit- und Paket-Tests) läuft lokal und in der CI („Test and Release“).
+- Die CI führt außerdem Lint und die TypeScript-Prüfung (`npm run check`) aus; beide müssen ohne Fehler durchlaufen (Stand 19.11.2026: 0 Warnungen, PR #12).
 - Die CI prüft zusätzlich den Adapterstart (Integrationstest) auf Ubuntu, Windows und macOS mit Node 22/24.
 - CI-Erfolg ersetzt keinen Test am echten Drucker.
 
 ## Offene Punkte
 
-- `npm run check` (TypeScript-Prüfung) meldet viele Typhinweise im Laufzeitcode; bewusst nicht angefasst, um nichts am laufenden Verhalten zu ändern.
 - Falls macOS-Runner bei GitHub wieder ausfallen: macOS in der CI-Matrix erneut pausieren.
 
 ## Regeln für Änderungen
 
 1. Vor Änderungen diese Datei und die betroffenen Quelldateien lesen.
 2. Zusammengehörige Änderungen bündeln; pro Stand ein CI-Lauf.
-3. Vor dem Push `npm run lint` und `npm run test:unit` ausführen.
+3. Vor dem Push `npm run lint`, `npm run check` und `npm run test:unit` ausführen.
 4. CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden.
 5. Nichts nach `main` übernehmen, was nicht am Drucker getestet ist.
 6. Herkunftshinweis und MIT-Lizenz erhalten.
