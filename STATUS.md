@@ -1,13 +1,14 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
+Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
 
 ## Stand 19.11.2026 – Version 0.4.11
 
 - **Drucker im Einsatz:** vier (2× A1 Mini, X1C, H2C).
 - **0.4.11 am echten System getestet (19.11.2026):** Installation, alle vier Drucker online, Testdruck auf dem X1C mit Alexa-Fertigmeldung, Adapter-Neustart mit sauberem Wiederverbinden.
 - **Enthält:** den bisherigen Stand von `feature/multi-printer` (0.4.10), die AMS-Definitionen `cfs`/`dry_sf_reason` und die Aufräumarbeiten (PR #10).
-- **`main` und `feature/multi-printer`** stehen auf demselben Stand.
+- **Installationsquelle:** `main` – `https://github.com/Apropo1710/ioBroker.bambulab-connect` (seit 19.11.2026; vorher `feature/multi-printer`).
+- Weitere Branches nur kurzzeitig für einzelne Änderungen; nach dem Merge löschen.
 
 ## Funktionsumfang
 
@@ -25,7 +26,6 @@ Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, 
 
 ## Offene Punkte
 
-- Festlegen, ob künftig von `main` installiert wird (dann kann `feature/multi-printer` entfallen).
 - `npm run check` (TypeScript-Prüfung) meldet viele Typhinweise im Laufzeitcode; bewusst nicht angefasst, um nichts am laufenden Verhalten zu ändern.
 - Falls macOS-Runner bei GitHub wieder ausfallen: macOS in der CI-Matrix erneut pausieren.
 
@@ -35,6 +35,6 @@ Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, 
 2. Zusammengehörige Änderungen bündeln; pro Stand ein CI-Lauf.
 3. Vor dem Push `npm run lint` und `npm run test:unit` ausführen.
 4. CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden.
-5. Nichts in den Installationsbranch übernehmen, was nicht am Drucker getestet ist.
+5. Nichts nach `main` übernehmen, was nicht am Drucker getestet ist.
 6. Herkunftshinweis und MIT-Lizenz erhalten.
 7. Keine veralteten Branches, PRs oder Dateien liegen lassen.
