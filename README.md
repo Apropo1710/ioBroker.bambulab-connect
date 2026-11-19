@@ -101,10 +101,21 @@ All of this helps me to provide error-free adapters that basically never crash.
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
-### __WORK IN PROGRESS__
-* (DutchmanNL & Copilot) Update all dependencies to latest versions, consolidating 17 Dependabot PRs
-* (DutchmanNL & Copilot) Synchronize admin translations with jsonConfig.json - add missing translations and remove orphaned keys (#202)
-* (DutchmanNL) Raise minimum Node.js to 22, modernise CI (Node 24, testing-action-check v2) and release tooling, and resolve repository checker findings
+### 0.4.11 (2026-11-19)
+* (Apropo1710) Consolidated maintenance release of the multi-printer branch
+* (Apropo1710) Define the filament backup attribute `filam_bak` (alias `filament_bak` kept)
+* (Apropo1710) Add H2C telemetry and AMS state definitions (`cfs`, `dry_sf_reason`)
+* (Apropo1710) Store `warnMessages.json` in the instance data directory
+* (Apropo1710) Never treat the adapter's own `info` folder as a removed printer
+* (Apropo1710) Run unit tests in CI and clean up outdated test files
+
+### 0.4.4 – 0.4.10 (2026-11)
+* (Apropo1710) Bambulab Connect: multi-printer support with separate connection state per printer
+* (Apropo1710) Local printer discovery in the admin page (name, IP, serial number, model; access code stays manual)
+* (Apropo1710) Quieter logs for offline printers, named info message on connection loss
+* (Apropo1710) Printer OTA and AMS firmware update detection
+* (Apropo1710) Model-specific access token help and additional state definitions
+* (DutchmanNL & Copilot) Taken over from the original adapter: dependency updates, translation sync (#202), minimum Node.js 22 and modernised CI
 
 ### 0.4.3 (2025-09-16)
 * (DutchmanNL) Improve error messages if printer is offline or not reachable.

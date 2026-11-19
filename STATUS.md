@@ -1,83 +1,39 @@
 # Projektstatus – ioBroker BambuLab Connect
 
-## Aktueller Feature-Branch-Abgleich – 17.11.2026, 02:56 MEZ
+Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
 
-- Branch `feature/multi-printer`: aktueller Head vor diesem Statusupdate `10c9ad097f1eb01eec75b4026f68b9de58b4f673`; letzter Laufzeitcode-Head laut Branchhistorie `dbbfeaad6f25f42e0b70c04c14592afc43affecf`. Paketversion **0.4.10**.
-- PR [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) ist offen, nicht gemergt und mergeable/clean; Vergleich zu `main`: **10 Commits voraus / 0 zurück**.
-- Letzter bestätigter Branchlauf #178 / Run `43492101514` für Branchcommit `692fafb12987d763f354cec47a7c23118ceb428f`: **completed / success**. Lint sowie Ubuntu/Windows mit Node 22/24 erfolgreich; macOS ist auf diesem Feature-Branch vorübergehend pausiert. Spätere Branchänderungen sind Dokumentation.
-- Der Branch enthält die Korrektur des tatsächlichen Firmwarefelds `filam_bak` samt kompatiblem Alias und die Ablage von `warnMessages.json` im absoluten Instanz-Datenverzeichnis. Diese Änderungen sind nicht nach `main` übernommen.
-- Eine erneute Live-Beobachtung am Drucker nach diesen Änderungen fehlt. Kein Release und kein Versionsbump durch PR #7.
-- Stabiler `main`-Stand bleibt **0.4.10**; der Nutzer hat den Main-Stand mit drei Druckern bestätigt.
+## Stand 19.11.2026 – Version 0.4.11 (Aufräumstand, Hardwaretest ausstehend)
 
-## Aktueller Feature-Branch-Stand – 15.11.2026, 03:05 MEZ
-- Branch `feature/multi-printer`, letzter Code-Head `dbbfeaad6f25f42e0b70c04c14592afc43affecf`; aktueller Dokumentations-Head vor diesem Commit `55b291fedcfa50c72e10add56eee9f688e8db8b6` (Statuskorrektur nach Merge von `main`); Paketversion **0.4.10**.
-- Pull Request [#7](https://github.com/Apropo1710/ioBroker.bambulab-connect/pull/7) ist offen, nicht gemergt; der Branch liegt sechs Commits vor `main`. Push-Run `43593649645` und PR-Run `43593653360`: **completed / success**.
-- Enthalten sind die Korrektur des tatsächlichen Felds `filam_bak` samt kompatiblem Alias `filament_bak`, zusätzliche H2C-/AMS-Telemetriedefinitionen sowie die Ablage von `warnMessages.json` im absoluten Instanz-Datenverzeichnis.
-- Der Workflow prüft Ubuntu und Windows mit Node 22/24 sowie Lint; macOS ist auf Nutzerwunsch vorübergehend pausiert.
-- Nicht nach `main` übernommen; kein Versionsbump und kein Release. Eine erneute Live-Beobachtung am Drucker nach diesen Änderungen steht noch aus.
-- Der stabile Main-Code bleibt `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`; der Nutzer hat diesen Stand mit drei Druckern bestätigt.
+- **Installationsquelle beim Nutzer:** `https://github.com/Apropo1710/ioBroker.bambulab-connect/tree/feature/multi-printer`
+- **Zuletzt bestätigt stabil:** 0.4.10 mit drei Druckern (Nutzerbestätigung 13.11.2026).
+- **0.4.11** (Branch `chore/cleanup`) fasst zusammen: `feature/multi-printer` + AMS-Definitionen aus `fix/missing-ams-state-attributes` + Aufräumarbeiten. Am Drucker noch nicht getestet.
 
+## Funktionsumfang
 
-## CI-Maßnahme – macOS vorübergehend pausiert (13.11.2026)
-- Build #176 (Run `43484902511`) auf `feature/multi-printer` vollständig erfolgreich: Lint, Ubuntu/Windows/macOS Node 22/24 grün.
-- Auf Nutzerwunsch wird macOS auf dem Entwicklungsbranch `feature/multi-printer` für einige Tage aus der Testmatrix genommen. Ubuntu und Windows mit Node 22/24 sowie Lint bleiben aktiv.
-- macOS ist nur vorübergehend pausiert, nicht dauerhaft aus der Plattformabdeckung gestrichen. Nach der Beobachtungsphase wieder aktivieren.
-- Die Änderung betrifft den Workflow-Stand dieses Entwicklungsbranches; `main` wird nicht verändert.
-- Keine Adapterlaufzeit- oder Druckerfunktion geändert.
+- Mehrere Drucker mit getrennten Laufzeit- und Verbindungszuständen.
+- Lokale Druckersuche im Admin (Name, IP, Seriennummer, Modell); der Access Code wird immer manuell eingetragen.
+- Offline-Drucker bleiben beim Start still; Verbindungsverlust wird als Info mit Druckernamen geloggt.
+- Erkennung von Drucker-OTA- und AMS-Firmwareupdates (Präfixe `ams/`, `ams_f1/`, `n3f/`, `n3s/`).
+- Warnungsdatei `warnMessages.json` liegt im Instanz-Datenverzeichnis.
 
+## Tests
 
-## Historischer Stand unmittelbar nach der Main-Promotion – 13.11.2026 (vormittags, MEZ; inzwischen durch getrennte Feature-Commits überholt)
-- Maßgeblicher Branch: `main`, zuletzt geprüfter Laufzeitcode-Commit `cd1a6a65a0bece57f4ef922fedc907ff9c21b2df`, Adapterversion **0.4.10**.
-- Der stabile Mehrdrucker-Stand ist bereits nach `main` übernommen; `feature/multi-printer` zeigt auf denselben Commit.
-- GitHub Actions „Test and Release“ #171 (Run `43382009645`) auf `main`: **completed / success**. Zusatzlauf #172 auf `feature/multi-printer` ebenfalls erfolgreich.
-- Nutzer bestätigt stabilen Betrieb mit drei Druckern.
-- CPU-Optimierung bleibt getrennte Arbeit auf `dev/bambulab-connect-cpu` und ist nicht Bestandteil des stabilen `main`-Stands.
-- Historische Formulierungen „wird jetzt nach main übernommen“ sind überholt; die Übernahme ist abgeschlossen.
+- `npm run test:unit` (Unit- und Paket-Tests) läuft lokal und in der CI („Test and Release“).
+- Die CI prüft zusätzlich den Adapterstart (Integrationstest) auf Ubuntu und Windows mit Node 22/24. macOS ist vorübergehend pausiert (Runner-Probleme bei GitHub).
+- CI-Erfolg ersetzt keinen Test am echten Drucker.
 
+## Offene Punkte
 
-**Stand: 13.11.2026**  
-**Adapterversion im Paket: 0.4.10**  
-**Maßgeblicher Branch: `main` (stabile Mehrdrucker-Version bereits übernommen)**  
-**Betriebsstatus: Nutzer bestätigt stabilen Betrieb mit drei Druckern**
+- Hardwaretest von 0.4.11; danach `feature/multi-printer` und `main` auf diesen Stand bringen.
+- Danach festlegen, ob künftig von `main` installiert wird (dann kann `feature/multi-printer` entfallen).
+- `npm run check` (TypeScript-Prüfung) meldet viele Typhinweise im Laufzeitcode; bewusst nicht angefasst, um nichts am laufenden Verhalten zu ändern.
 
-## Projektziel und Herkunft
+## Regeln für Änderungen
 
-Eigenständiger ioBroker-Adapter für BambuLab-Drucker unter dem Repository und Projektnamen `Apropo1710/ioBroker.bambulab-connect`. Die ursprüngliche Herkunftsangabe und MIT-Lizenz bleiben erhalten.
-
-## Umgesetzte Funktionen und Korrekturen
-
-- Mehrdrucker-Unterstützung mit getrennten Laufzeit- und Verbindungszuständen je Drucker.
-- Fehlende State-Attributdefinitionen ergänzt; Firmware-Versionswerte bleiben Strings, damit führende Nullen erhalten bleiben.
-- Erwartete MQTT-Keepalive-/Offline-Ereignisse erzeugen keine unnötigen Fehler beim regulären Ausschalten.
-- Nicht erreichbare Drucker bleiben beim Adapterstart still; ein Drucker, der zuvor verbunden war und später die Verbindung verliert, wird separat behandelt.
-- Verbindungsverlust wird als Info statt Warnung protokolliert und nennt den jeweiligen Druckernamen.
-- Drucker-OTA-Firmwareupdates werden getrennt von AMS-Firmwareupdates erkannt.
-- AMS-Firmwareerkennung berücksichtigt die Bambu-Modulpräfixe `ams/`, `ams_f1/`, `n3f/` und `n3s/`; Details enthalten Modultyp und Modul-ID.
-- Die Rohdaten unter `mc_for_ams_firmware.firmware` werden nicht als Liste tatsächlich angeschlossener AMS-Geräte fehlinterpretiert.
-
-## Prüfung und Stabilität
-
-- Nutzer-Hardwaretest mit drei Druckern: nicht erreichbare Drucker bleiben beim Adapterstart still; erreichbare Drucker verbinden sich normal.
-- Nutzer bestätigt am 13.11.2026, dass der Adapter stabil läuft.
-- CI #161 (Startverhalten Offline-Drucker): erfolgreich.
-- CI #164 (AMS-Firmwareerkennung auf feature/multi-printer): erfolgreich.
-- CI #166 (Info-Log bei Verbindungsverlust): erfolgreich.
-- Die AMS-Firmwarezuordnung ist durch Regressionstests für die bekannten Modulpräfixe abgedeckt. Die vollständige Zuordnung mit realen AMS-Hardwarekombinationen bleibt bei Gelegenheit weiter zu beobachten.
-- CI-Ergebnisse sind keine vollständige Hardwarefreigabe; Hardwaretests werden separat dokumentiert.
-
-## Noch offene bzw. getrennte Arbeiten
-
-- CPU-Baseline und mögliche Optimierungen laufen auf dem separaten Branch `dev/bambulab-connect-cpu`; dieser Branch ist nicht Bestandteil der hier beschriebenen stabilen Mehrdrucker-Übernahme.
-- Weitere Firmware-/AMS-Beobachtungen nur anhand realer Gerätedaten ergänzen.
-- Nach der Übernahme nach `main` bleibt `main` der maßgebliche Haupt- und Installationsbranch; weitere Entwicklung erfolgt dort bzw. über darauf basierende Feature-Branches.
-
-## Verbindliche Entwicklungs- und Build-Regeln
-
-1. Vor Änderungen diese STATUS.md und die betroffenen Quelldateien lesen.
-2. Zusammengehörige Änderungen bündeln; keine unnötigen Einzel-Builds, Commits oder Pushes.
-3. Vor Push alle betroffenen Dateien und Zusammenhänge prüfen; lokale Tests und statische Prüfungen ausführen, soweit möglich.
-4. Pro gebündeltem Stand einen CI-Lauf auslösen und währenddessen keine Folge-Commits pushen.
-5. CI-Erfolg, lokale Tests und Hardwaretests klar voneinander unterscheiden.
-6. Keine Installation empfehlen, solange der relevante Stand nicht ausreichend geprüft ist.
-7. Herkunftshinweis und MIT-Lizenz erhalten.
-8. Diese Datei nach jeder zusammenhängenden Änderung aktualisieren und bei Branch-Wechseln in den maßgeblichen Branch übernehmen.
+1. Vor Änderungen diese Datei und die betroffenen Quelldateien lesen.
+2. Zusammengehörige Änderungen bündeln; pro Stand ein CI-Lauf.
+3. Vor dem Push `npm run lint` und `npm run test:unit` ausführen.
+4. CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden.
+5. Nichts in den Installationsbranch übernehmen, was nicht am Drucker getestet ist.
+6. Herkunftshinweis und MIT-Lizenz erhalten.
+7. Keine veralteten Branches, PRs oder Dateien liegen lassen.

@@ -19,3 +19,6 @@ warnMessages.json
 
 # commitinfo file
 .commitinfo
+
+# macOS
+.DS_Store
