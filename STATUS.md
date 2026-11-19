@@ -2,11 +2,12 @@
 
 Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
 
-## Stand 19.11.2026 – Version 0.4.11 (Aufräumstand, Hardwaretest ausstehend)
+## Stand 19.11.2026 – Version 0.4.11
 
-- **Installationsquelle beim Nutzer:** `https://github.com/Apropo1710/ioBroker.bambulab-connect/tree/feature/multi-printer`
-- **Zuletzt bestätigt stabil:** 0.4.10 mit drei Druckern (Nutzerbestätigung 13.11.2026).
-- **0.4.11** (Branch `chore/cleanup`) fasst zusammen: `feature/multi-printer` + AMS-Definitionen aus `fix/missing-ams-state-attributes` + Aufräumarbeiten. Am Drucker noch nicht getestet.
+- **Drucker im Einsatz:** vier (2× A1 Mini, X1C, H2C).
+- **0.4.11 am echten System getestet (19.11.2026):** Installation, alle vier Drucker online, Testdruck auf dem X1C mit Alexa-Fertigmeldung, Adapter-Neustart mit sauberem Wiederverbinden.
+- **Enthält:** den bisherigen Stand von `feature/multi-printer` (0.4.10), die AMS-Definitionen `cfs`/`dry_sf_reason` und die Aufräumarbeiten (PR #10).
+- **`main` und `feature/multi-printer`** stehen auf demselben Stand.
 
 ## Funktionsumfang
 
@@ -19,14 +20,14 @@ Einzige Statusdatei des Projekts. Sie wird nur im Installationsbranch gepflegt, 
 ## Tests
 
 - `npm run test:unit` (Unit- und Paket-Tests) läuft lokal und in der CI („Test and Release“).
-- Die CI prüft zusätzlich den Adapterstart (Integrationstest) auf Ubuntu und Windows mit Node 22/24. macOS ist vorübergehend pausiert (Runner-Probleme bei GitHub).
+- Die CI prüft zusätzlich den Adapterstart (Integrationstest) auf Ubuntu, Windows und macOS mit Node 22/24.
 - CI-Erfolg ersetzt keinen Test am echten Drucker.
 
 ## Offene Punkte
 
-- Hardwaretest von 0.4.11; danach `feature/multi-printer` und `main` auf diesen Stand bringen.
-- Danach festlegen, ob künftig von `main` installiert wird (dann kann `feature/multi-printer` entfallen).
+- Festlegen, ob künftig von `main` installiert wird (dann kann `feature/multi-printer` entfallen).
 - `npm run check` (TypeScript-Prüfung) meldet viele Typhinweise im Laufzeitcode; bewusst nicht angefasst, um nichts am laufenden Verhalten zu ändern.
+- Falls macOS-Runner bei GitHub wieder ausfallen: macOS in der CI-Matrix erneut pausieren.
 
 ## Regeln für Änderungen
 
