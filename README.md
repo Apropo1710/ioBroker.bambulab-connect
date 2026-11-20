@@ -101,6 +101,10 @@ All of this helps me to provide error-free adapters that basically never crash.
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
+### 0.4.12 (2026-11-20)
+* (Apropo1710) Add state definitions for `action` and `timestamp` sent by newer printer firmware
+* (Apropo1710) TypeScript check of the JavaScript sources is clean and runs in CI
+
 ### 0.4.11 (2026-11-19)
 * (Apropo1710) Consolidated maintenance release of the multi-printer branch
 * (Apropo1710) Define the filament backup attribute `filam_bak` (alias `filament_bak` kept)

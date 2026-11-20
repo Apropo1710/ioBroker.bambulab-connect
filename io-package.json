@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "bambulab-connect",
-        "version": "0.4.11",
+        "version": "0.4.12",
         "news": {
+            "0.4.12": {
+                "en": "Add state definitions for \"action\" and \"timestamp\" sent by newer printer firmware; internal type check cleanup.",
+                "de": "Datenpunkt-Definitionen für \"action\" und \"timestamp\" aus neuerer Drucker-Firmware ergänzt; interne Bereinigung der Typprüfung."
+            },
             "0.4.11": {
                 "en": "Consolidated maintenance release: includes the filament backup attribute fix, H2C/AMS telemetry definitions and the warning file location fix; the adapter info folder is never treated as a removed printer; unit tests now run in CI.",
                 "de": "Konsolidiertes Wartungsrelease: enthält die Korrektur des Filament-Backup-Attributs, H2C-/AMS-Telemetriedefinitionen und den korrigierten Speicherort der Warnungsdatei; der Adapter-Ordner info wird nie als entfernter Drucker behandelt; Unit-Tests laufen jetzt in der CI."
@@ -26,19 +30,6 @@
             "0.4.6": {
                 "en": "Discovery results now hide printers after they are configured and can be cleared manually.",
                 "de": "Suchergebnisse verschwinden nach dem Konfigurieren. Suchergebnisse können manuell gelöscht werden."
-            },
-            "0.4.4": {
-                "en": "Fixed the printer discovery Admin response so the results can be displayed inline. Added a clear version marker for this test build.",
-                "de": "Druckersuche korrigiert: Ergebnisse sollen direkt in der Admin-Konfiguration angezeigt werden. Eindeutige Versionsnummer für diesen Teststand.",
-                "ru": "Исправлено отображение результатов поиска принтеров непосредственно в Admin. Добавлен номер версии для тестовой сборки.",
-                "pt": "Corrigida a exibição dos resultados da busca de impressoras diretamente no Admin. Adicionado marcador de versão para esta compilação de teste.",
-                "nl": "De printerzoekresultaten worden rechtstreeks in Admin weergegeven. Versiemarkering voor deze testbuild toegevoegd.",
-                "fr": "Correction de l’affichage des résultats de recherche des imprimantes directement dans Admin. Ajout d’un marqueur de version pour cette version de test.",
-                "it": "Corretto il display dei risultati della ricerca delle stampanti direttamente in Admin. Aggiunto un identificatore di versione per questa build di test.",
-                "es": "Se corrigió la visualización de los resultados de búsqueda de impresoras directamente en Admin. Se añadió un marcador de versión para esta compilación de prueba.",
-                "pl": "Poprawiono wyświetlanie wyników wyszukiwania drukarek bezpośrednio w Admin. Dodano oznaczenie wersji dla kompilacji testowej.",
-                "uk": "Виправлено відображення результатів пошуку принтерів безпосередньо в Admin. Додано маркер версії для тестової збірки.",
-                "zh-cn": "修复了在 Admin 中直接显示打印机搜索结果的问题。为测试版本添加了版本标记。"
             }
         },
         "titleLang": {
