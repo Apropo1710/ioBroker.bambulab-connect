@@ -2,8 +2,9 @@
 
 Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
 
-## Stand 20.11.2026 – Version 0.4.12
+## Stand 20.11.2026 – Version 0.4.13
 
+- **0.4.13:** Zugangsdaten-Vergleich mit dem Original-Adapter `bambulab` entfernt (Original wurde am 20.11.2026 deinstalliert); Zugangsdaten-Diagnose nur noch im Debug-Log. Verbindung und Datenpunkte unverändert.
 - **0.4.12:** Definitionen für die HMS-Felder `action` und `timestamp` (`<Drucker>.status.hms.<n>`) aus neuerer A1-Firmware (Warnung im Log vom 20.11.2026); sonst wie 0.4.11.
 
 ### 0.4.11 (19.11.2026)
