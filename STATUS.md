@@ -2,7 +2,11 @@
 
 Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalten und nur bei echten Änderungen aktualisiert (keine reinen Status-Commits).
 
-## Stand 19.11.2026 – Version 0.4.11
+## Stand 20.11.2026 – Version 0.4.12
+
+- **0.4.12:** Definitionen für `action` und `timestamp` aus neuerer Drucker-Firmware (Warnung im Log vom 20.11.2026); sonst wie 0.4.11.
+
+### 0.4.11 (19.11.2026)
 
 - **Drucker im Einsatz:** vier (2× A1 Mini, X1C, H2C).
 - **0.4.11 am echten System getestet (19.11.2026):** Installation, alle vier Drucker online, Testdruck auf dem X1C mit Alexa-Fertigmeldung, Adapter-Neustart mit sauberem Wiederverbinden.
