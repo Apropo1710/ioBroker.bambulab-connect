@@ -102,7 +102,7 @@ All of this helps me to provide error-free adapters that basically never crash.
 	### __WORK IN PROGRESS__
 -->
 ### 0.4.12 (2026-11-20)
-* (Apropo1710) Add state definitions for `action` and `timestamp` sent by newer printer firmware
+* (Apropo1710) Add state definitions for the HMS entry fields `action` and `timestamp` sent by newer A1 firmware
 * (Apropo1710) TypeScript check of the JavaScript sources is clean and runs in CI
 
 ### 0.4.11 (2026-11-19)

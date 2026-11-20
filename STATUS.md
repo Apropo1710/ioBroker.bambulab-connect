@@ -4,7 +4,7 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 
 ## Stand 20.11.2026 – Version 0.4.12
 
-- **0.4.12:** Definitionen für `action` und `timestamp` aus neuerer Drucker-Firmware (Warnung im Log vom 20.11.2026); sonst wie 0.4.11.
+- **0.4.12:** Definitionen für die HMS-Felder `action` und `timestamp` (`<Drucker>.status.hms.<n>`) aus neuerer A1-Firmware (Warnung im Log vom 20.11.2026); sonst wie 0.4.11.
 
 ### 0.4.11 (19.11.2026)
 
