@@ -18,7 +18,6 @@ const convert = require('./lib/converter'); // Load converter functions
 const deriveFirmwareUpdate = require('./lib/firmwareUpdate');
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
-const { compareCredentialValues } = require('./lib/credentialDiagnostics');
 const {
     DISCOVERY_STATE_ID,
     createAdminDiscoveryResponse,
@@ -221,22 +220,6 @@ class BambulabConnect extends utils.Adapter {
         const credentialConfigSource =
             Array.isArray(this.config.printers) && this.config.printers.length > 0 ? 'printer table' : 'legacy config';
 
-        // Compare the configured table token with the working legacy adapter's
-        // native credential without ever logging either credential or a hash.
-        let legacyAccessToken;
-        let legacyConfigAvailable = false;
-        try {
-            const legacyAdapterObject = await this.getForeignObjectAsync('system.adapter.bambulab.0');
-            if (legacyAdapterObject && legacyAdapterObject.native) {
-                legacyConfigAvailable = true;
-                legacyAccessToken = legacyAdapterObject.native.Password;
-            }
-        } catch (error) {
-            this.log.debug(
-                `Could not read legacy bambulab.0 config for credential comparison: ${error.message || error}`,
-            );
-        }
-
         for (const printer of printers) {
             // Remove the obsolete AMS -> ams subtree created by previous adapter
             // versions. The new layout stores units at printer.ams.units.
@@ -256,12 +239,8 @@ class BambulabConnect extends utils.Adapter {
 
             // Safe credential diagnostics: never log the access token itself.
             const accessToken = context.config.Password;
-            this.log.info(
+            this.log.debug(
                 `Credential diagnostics for "${context.printerName}": source=${credentialConfigSource}, token present=${Boolean(accessToken)}, type=${typeof accessToken}, length=${typeof accessToken === 'string' ? accessToken.length : 'n/a'}.`,
-            );
-            const credentialComparison = compareCredentialValues(accessToken, legacyAccessToken);
-            this.log.info(
-                `Credential comparison for "${context.printerName}" against bambulab.0 native Password: original config available=${legacyConfigAvailable}, result=${credentialComparison === null ? 'unavailable' : credentialComparison ? 'MATCH' : 'DIFFERENT'}.`,
             );
 
             // Keep connection status per printer. The adapter instance itself

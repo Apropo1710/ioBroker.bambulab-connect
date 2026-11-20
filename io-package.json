@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "bambulab-connect",
-        "version": "0.4.12",
+        "version": "0.4.13",
         "news": {
+            "0.4.13": {
+                "en": "Removed the start-up credential comparison with the original bambulab adapter; credential diagnostics are logged at debug level only.",
+                "de": "Vergleich der Zugangsdaten mit dem Original-Adapter bambulab beim Start entfernt; Zugangsdaten-Diagnose nur noch auf Debug-Ebene."
+            },
             "0.4.12": {
                 "en": "Add state definitions for \"action\" and \"timestamp\" sent by newer printer firmware; internal type check cleanup.",
                 "de": "Datenpunkt-Definitionen für \"action\" und \"timestamp\" aus neuerer Drucker-Firmware ergänzt; interne Bereinigung der Typprüfung."
@@ -26,10 +30,6 @@
             "0.4.7": {
                 "en": "Fixed discovery result filtering formatting and tests.",
                 "de": "Formatierungsfehler bei der Druckersuche behoben und Tests angepasst."
-            },
-            "0.4.6": {
-                "en": "Discovery results now hide printers after they are configured and can be cleared manually.",
-                "de": "Suchergebnisse verschwinden nach dem Konfigurieren. Suchergebnisse können manuell gelöscht werden."
             }
         },
         "titleLang": {
