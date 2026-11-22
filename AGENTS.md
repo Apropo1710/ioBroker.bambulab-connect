@@ -15,7 +15,7 @@ ioBroker-Adapter „BambuLab Connect“ für mehrere BambuLab-3D-Drucker (u. a. 
 
 - **`STATUS.md` ist die einzige Statusdatei.** Keine weiteren Status-, Plan-, Übergabe-, TODO- oder Notizdateien anlegen, auch nicht „vorübergehend“. Der Workflow „Docs guard“ schlägt fehl, wenn eine weitere solche Datei auftaucht. `STATUS.md` nur bei echten Änderungen aktualisieren, keine reinen Status-Commits.
 - **Ablauf:** `main` ist geschützt; jede Änderung über Branch und Pull Request, der Branch wird nach dem Merge automatisch gelöscht. Vorher `npm run lint`, `npm run check` und `npm run test:unit` ausführen.
-- **Nichts nach `main` übernehmen, was nicht am Drucker getestet ist.** CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden.
+- **Eigene Änderungen erst nach einem Test am Drucker nach `main` übernehmen.** CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden. Einzige Ausnahme: Dependabot-Updates werden nach grüner Test-Matrix automatisch gemergt (siehe `STATUS.md`, Regel 5).
 - **Herkunftshinweis und MIT-Lizenz** des Original-Adapters erhalten.
 
 ## Dokumentation – feste Plätze
