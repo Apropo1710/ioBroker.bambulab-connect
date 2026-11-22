@@ -41,7 +41,7 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 2. Zusammengehörige Änderungen bündeln; pro Stand ein CI-Lauf.
 3. Vor dem Push `npm run lint`, `npm run check` und `npm run test:unit` ausführen.
 4. CI-Ergebnis, lokale Tests und Hardwaretest klar unterscheiden.
-5. Nichts nach `main` übernehmen, was nicht am Drucker getestet ist. Das gilt auch für Dependabot-Updates (einmal im Monat am 13.): Sie werden nicht automatisch gemergt.
+5. Eigene Änderungen am Adapter erst nach einem Test am Drucker nach `main` übernehmen. Ausnahme: Dependabot-Updates (einmal im Monat am 13.; Laufzeit-Bibliotheken nur Fehlerkorrekturen und Sicherheitsupdates, Entwicklungswerkzeuge auch kleinere Updates) werden nach grüner Test-Matrix automatisch gemergt und bei der nächsten Installation am Drucker mitgetestet – ein Merge auf `main` aktualisiert die laufende ioBroker-Installation nicht.
 6. Herkunftshinweis und MIT-Lizenz erhalten.
 7. Keine veralteten Branches, PRs oder Dateien liegen lassen.
 8. Arbeitsregeln für Menschen und KI-Werkzeuge stehen in `AGENTS.md` (`CLAUDE.md` verweist darauf); der Workflow „Docs guard“ verhindert weitere Statusdateien.
