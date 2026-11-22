@@ -101,6 +101,9 @@ All of this helps me to provide error-free adapters that basically never crash.
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
+### 0.4.14 (2026-11-22)
+* (Apropo1710) `err2.err_code` accepts text error codes sent by the H2C while an error is active
+
 ### 0.4.13 (2026-11-20)
 * (Apropo1710) Remove the start-up credential comparison with the original `bambulab` adapter (migration leftover)
 * (Apropo1710) Log credential diagnostics at debug level only

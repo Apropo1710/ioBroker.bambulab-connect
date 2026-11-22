@@ -689,9 +689,9 @@ class BambulabConnect extends utils.Adapter {
             }
 
             // Normalize known MQTT type inconsistencies only at their specific paths.
-            // err2.err_code is sometimes sent as a numeric string, while nozzle.tar_id
-            // can arrive as a number. Keep global state definitions unchanged because
-            // these keys are used with different types elsewhere.
+            // err2.err_code is sometimes sent as a numeric string (converted to a number here);
+            // non-numeric text codes are stored unchanged (state type mixed). nozzle.tar_id
+            // can arrive as a number and is stored as text.
             const errCode = message.print.err2?.err_code;
             if (typeof errCode === 'string') {
                 const normalizedErrCode = errCode.trim();
