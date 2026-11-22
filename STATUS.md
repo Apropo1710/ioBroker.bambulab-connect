@@ -44,3 +44,4 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 5. Nichts nach `main` übernehmen, was nicht am Drucker getestet ist.
 6. Herkunftshinweis und MIT-Lizenz erhalten.
 7. Keine veralteten Branches, PRs oder Dateien liegen lassen.
+8. Arbeitsregeln für Menschen und KI-Werkzeuge stehen in `AGENTS.md` (`CLAUDE.md` verweist darauf); der Workflow „Docs guard“ verhindert weitere Statusdateien.
