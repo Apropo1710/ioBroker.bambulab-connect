@@ -26,4 +26,3 @@ updates:
       timezone: "Europe/Berlin"
       cronjob: "25 2 13 * *"
     open-pull-requests-limit: 30
-    target-branch: "dependabot"
