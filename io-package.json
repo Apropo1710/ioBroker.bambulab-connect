@@ -1,8 +1,12 @@
 {
     "common": {
         "name": "bambulab-connect",
-        "version": "0.4.13",
+        "version": "0.4.14",
         "news": {
+            "0.4.14": {
+                "en": "err2.err_code accepts text error codes (sent by the H2C while an error is active) instead of rejecting them.",
+                "de": "err2.err_code übernimmt Fehlercodes als Text (vom H2C bei aktivem Fehler gesendet), statt sie abzulehnen."
+            },
             "0.4.13": {
                 "en": "Removed the start-up credential comparison with the original bambulab adapter; credential diagnostics are logged at debug level only.",
                 "de": "Vergleich der Zugangsdaten mit dem Original-Adapter bambulab beim Start entfernt; Zugangsdaten-Diagnose nur noch auf Debug-Ebene."
@@ -26,10 +30,6 @@
             "0.4.8": {
                 "en": "Added discovery model codes for H2C and H2D Pro.",
                 "de": "Erkennung der Druckermodelle H2C und H2D Pro bei der Suche ergänzt."
-            },
-            "0.4.7": {
-                "en": "Fixed discovery result filtering formatting and tests.",
-                "de": "Formatierungsfehler bei der Druckersuche behoben und Tests angepasst."
             }
         },
         "titleLang": {
