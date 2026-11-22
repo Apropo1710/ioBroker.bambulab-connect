@@ -1,0 +1,41 @@
+name: Docs guard
+
+# Ensures STATUS.md stays the only status file (see AGENTS.md).
+# Runs on every push/PR and additionally once a day, because pure documentation
+# commits on main are marked [skip ci] and would otherwise not be checked.
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  single-status-file:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Only one status file
+        env:
+          STATUS_FILE: STATUS.md
+          ALLOWED: ""
+        run: |
+          set -euo pipefail
+          candidates=$(git ls-files | grep -iE '(^|/)[^/]*(status|handover|uebergabe|übergabe|plan|todo|progress)[^/]*\.(md|txt)$' || true)
+          bad=""
+          for file in $candidates; do
+            [ "$file" = "$STATUS_FILE" ] && continue
+            skip=0
+            for allowed in ${ALLOWED:-}; do [ "$file" = "$allowed" ] && skip=1; done
+            [ $skip -eq 1 ] && continue
+            bad="$bad $file"
+          done
+          if [ -n "$bad" ]; then
+            echo "::error::Additional status/plan/handover files are not allowed. Use $STATUS_FILE (see AGENTS.md):$bad"
+            exit 1
+          fi
+          echo "OK: only $STATUS_FILE is used as status file."
+
