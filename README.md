@@ -62,39 +62,30 @@ The legacy series choices (A1-Series, H2D-Series, P1-Series, X1-Series) remain a
 
 
 ## Supported commands
-| Command            | X1C                 | X1                  | P1P                      | P1S                      | A1                       |
-|--------------------|---------------------|---------------------|--------------------------|--------------------------|--------------------------|
-| Custom g-code      | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Pause              | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Resume             | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Stop               | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Fan-Aux            | :white_check_mark:  | :white_check_mark:  | :interrobang: if present | :white_check_mark:       | :x: No hardware support  |
-| Fan-Chamber        | :white_check_mark:  | :white_check_mark:  | :interrobang: if present | :white_check_mark:       | :x: No hardware support  |
-| Fan-ToolHead       | :white_check_mark:  | :white_check_mark:  | :interrobang: if present | :white_check_mark:       | :white_check_mark:       |
-| Light-Chamber      | :white_check_mark:  | :white_check_mark:  | :interrobang: if present | :white_check_mark:       | :white_check_mark:       |
-| Light-Logo         | :white_check_mark:  | :white_check_mark:  | :x: No hardware support  | :x: No hardware support  | :x: No hardware support  |
-| Temperature-Bed    | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Temperature-Nozzle | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
-| Speed Level        | :white_check_mark:  | :white_check_mark:  | :white_check_mark:       | :white_check_mark:       | :white_check_mark:       |
 
-## To-Do
-[ ] Restructure/complete current control states in control folder
-[ ] Optimize state attributes definitions  
+Commands are written to the states under `<printer>.control`. The adapter sends the same MQTT command to every printer model; whether a printer executes it depends on its hardware and firmware.
 
-## Support the original adapter author
-The donation link below supports DutchmanNL, the original adapter author. It is not a donation link for the Bambulab Connect maintainer or the ioBroker project.  
-[![Donate](https://raw.githubusercontent.com/DrozmotiX/ioBroker.sourceanalytix/master/admin/button.png)](http://paypal.me/DutchmanNL)
+**None of these commands have been verified with Bambulab Connect yet.** The table shows the support documented by the original adapter; the H2C column is not documented there.
 
-## What is Sentry.io and what is reported to the servers of that company?
-Sentry.io is a service for developers to get an overview about errors from their applications. And exactly this is implemented in this adapter.
+| Command | State in `<printer>.control` | X1C / X1 | P1P | P1S | A1 / A1 mini | H2C |
+|---|---|---|---|---|---|---|
+| Pause | `pause` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Resume | `resume` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Stop | `stop` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Homing | `homing` | :grey_question: | :grey_question: | :grey_question: | :grey_question: | :grey_question: |
+| Custom G-code | `_customGcode` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Fan – tool head / part cooling | `cooling_fan_speed` | :white_check_mark: | :interrobang: if present | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Fan – auxiliary | `big_fan1_speed` | :white_check_mark: | :interrobang: if present | :white_check_mark: | :x: no hardware | :grey_question: |
+| Fan – chamber | `big_fan2_speed` | :white_check_mark: | :interrobang: if present | :white_check_mark: | :x: no hardware | :grey_question: |
+| Light – chamber | `lightChamber` | :white_check_mark: | :interrobang: if present | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Light – tool head logo | `lightToolHeadLogo` | :white_check_mark: | :x: no hardware | :x: no hardware | :x: no hardware | :grey_question: |
+| Temperature – bed | `bed_target_temper` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Temperature – nozzle | `nozzle_target_temper` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
+| Speed level | `spd_lvl` | :white_check_mark: | :white_check_mark: | :white_check_mark: | :white_check_mark: | :grey_question: |
 
-When the adapter crashes or any other Code error happens,
-this error message that also appears in the ioBroker log is submitted to Sentry.
-When you allow iobroker GmbH to collect diagnostic data, then also your installation ID
-(this is just a unique ID **without** any additional infos about you, email, name or such) is included.
-This allows Sentry to group errors and show how many unique users are affected by such an error.
-All of this helps me to provide error-free adapters that basically never crash.
+:white_check_mark: documented by the original adapter · :interrobang: depends on installed hardware · :x: hardware not present · :grey_question: not documented / not verified
 
+The H2C is a multi-tool printer; nozzle temperature and G-code commands that address a single tool may not behave as on single-nozzle printers. G-code commands that could interfere with a running print are blocked while printing.
 
 ## Changelog
 <!--
