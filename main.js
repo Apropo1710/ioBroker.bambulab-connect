@@ -406,6 +406,8 @@ class BambulabConnect extends utils.Adapter {
                     this.log.info(`Printer "${this.printerName}" connected successfully`);
                 }
                 this.clientConnection.connected = true;
+                // Report the printer as reachable in <printer>.info.connection (mapped by context.setState).
+                this.setState('info.connection', true, true);
 
                 this.clientConnection.connectError = false;
                 this.clientConnection.initiated = false; // Reset initiated flag on successful connection

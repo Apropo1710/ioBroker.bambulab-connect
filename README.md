@@ -105,6 +105,7 @@ Fields the printer did not report are `null`. Jobs that end while the adapter is
 -->
 ### __WORK IN PROGRESS__
 * (Apropo1710) Print history per printer in `<printer>.history.jobs` (last 50 finished/failed jobs)
+* (Apropo1710) Fix: `<printer>.info.connection` is set to `true` when the printer connects (was always `false`)
 
 ### 0.4.14 (2026-11-22)
 * (Apropo1710) `err2.err_code` accepts text error codes sent by the H2C while an error is active
