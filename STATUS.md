@@ -35,6 +35,7 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 
 ## Offene Punkte
 
+- `<Drucker>.info.connection` wurde nie auf `true` gesetzt (seit Einführung des Verbindungsstatus pro Drucker); behoben am 27.11.2026, am Drucker noch nicht bestätigt.
 - Druckverlauf am Drucker testen: nach einem Testdruck muss ein Eintrag in `<Drucker>.history.jobs` stehen (fertig und abgebrochen).
 - Falls macOS-Runner bei GitHub wieder ausfallen: macOS in der CI-Matrix erneut pausieren.
 
