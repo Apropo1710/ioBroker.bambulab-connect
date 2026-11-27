@@ -16,6 +16,7 @@ const jsonExplorer = require('./lib/jsonExplorer'); // Local optimized jsonExplo
 const organizeTelemetry = require('./lib/telemetryStructure');
 const convert = require('./lib/converter'); // Load converter functions
 const deriveFirmwareUpdate = require('./lib/firmwareUpdate');
+const { MAX_HISTORY_ENTRIES, PrintHistoryTracker, parseHistory } = require('./lib/printHistory');
 const stateAttr = require(`${__dirname}/lib/state_attr.js`); // Load attribute library
 const { getPrinters, ensureUniqueIds, ensureUniqueSerials, getStalePrinterRootIds } = require('./lib/printerConfig');
 const {
@@ -82,6 +83,8 @@ class BambulabConnect extends utils.Adapter {
         this.lastStateValues;
         /** @type {Record<string, any>} */
         this.createdStatesDetails;
+        /** @type {import('./lib/printHistory').PrintHistoryTracker | null} */
+        this.printHistory;
     }
 
     /**
@@ -264,6 +267,8 @@ class BambulabConnect extends utils.Adapter {
             });
             await this.setStateAsync(`${printer.id}.info.connection`, { val: false, ack: true });
 
+            await this.setupPrintHistory(context);
+
             const adapterSetState = this.setState.bind(this);
             context.setState = (id, state, ack) => {
                 if (id !== 'info.connection') {
@@ -285,6 +290,63 @@ class BambulabConnect extends utils.Adapter {
         // The adapter is operational when its runtime is initialized. Printer
         // availability is reported separately via <printer>.info.connection.
         await this.setStateAsync('info.connection', { val: true, ack: true });
+    }
+
+    /**
+     * Create the print history state of one printer and load stored entries.
+     *
+     * @param {any} context Printer runtime context.
+     */
+    async setupPrintHistory(context) {
+        const printerId = context.printerId;
+        await this.extendObjectAsync(`${printerId}.history`, {
+            type: 'channel',
+            common: { name: `${context.printerName} print history` },
+            native: {},
+        });
+        await this.extendObjectAsync(`${printerId}.history.jobs`, {
+            type: 'state',
+            common: {
+                name: `Last ${MAX_HISTORY_ENTRIES} finished or failed print jobs (JSON, newest first)`,
+                type: 'string',
+                role: 'json',
+                read: true,
+                write: false,
+                def: '[]',
+            },
+            native: {},
+        });
+        let stored = [];
+        try {
+            const state = await this.getStateAsync(`${printerId}.history.jobs`);
+            stored = parseHistory(state?.val);
+        } catch (e) {
+            this.log.warn(`Could not read print history of "${context.printerName}": ${e}`);
+        }
+        context.printHistory = new PrintHistoryTracker(stored);
+    }
+
+    /**
+     * Track job fields and store a history entry when a job ends.
+     *
+     * @param {object} print Raw MQTT print payload.
+     */
+    async recordPrintHistory(print) {
+        if (!this.printHistory) {
+            return;
+        }
+        try {
+            const entry = this.printHistory.update(print);
+            if (entry) {
+                this.log.info(`Print job "${entry.name || 'unknown'}" on "${this.printerName}" ${entry.result}`);
+                await this.setStateAsync(`${this.printerId}.history.jobs`, {
+                    val: this.printHistory.toJSON(),
+                    ack: true,
+                });
+            }
+        } catch (e) {
+            this.log.warn(`Could not update print history of "${this.printerName}": ${e}`);
+        }
     }
 
     /**
@@ -488,6 +550,8 @@ class BambulabConnect extends utils.Adapter {
             // dropping messages here can leave ioBroker states stale or incomplete.
 
             if (message.print) {
+                await this.recordPrintHistory(message.print);
+
                 if (this.log.level === 'debug' || this.log.level === 'silly') {
                     try {
                         this.log.debug(`Extruder R temp: ${message.print.device.extruder.info[0].temp}`);

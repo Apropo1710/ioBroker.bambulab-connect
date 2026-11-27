@@ -87,11 +87,25 @@ Commands are written to the states under `<printer>.control`. The adapter sends 
 
 The H2C is a multi-tool printer; nozzle temperature and G-code commands that address a single tool may not behave as on single-nozzle printers. G-code commands that could interfere with a running print are blocked while printing.
 
+## Print history
+
+`<printer>.history.jobs` holds the last 50 finished or failed print jobs as JSON (newest first). An entry is written when `gcode_state` changes from an active state (`PREPARE`, `SLICING`, `RUNNING`, `PAUSE`) to `FINISH` or `FAILED`:
+
+```json
+{ "name": "Benchy", "file": "benchy.gcode", "result": "finished", "startedAt": "2026-11-27T08:00:00.000Z",
+  "endedAt": "2026-11-27T09:30:00.000Z", "durationMinutes": 90, "percent": 100, "layer": 200, "totalLayers": 200, "errorCode": null }
+```
+
+Fields the printer did not report are `null`. Jobs that end while the adapter is not running are not recorded.
+
 ## Changelog
 <!--
 	Placeholder for the next version (at the beginning of the line):
 	### __WORK IN PROGRESS__
 -->
+### __WORK IN PROGRESS__
+* (Apropo1710) Print history per printer in `<printer>.history.jobs` (last 50 finished/failed jobs)
+
 ### 0.4.14 (2026-11-22)
 * (Apropo1710) `err2.err_code` accepts text error codes sent by the H2C while an error is active
 

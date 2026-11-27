@@ -4,6 +4,7 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 
 ## Stand 22.11.2026 – Version 0.4.14
 
+- **In Arbeit (Branch `feature/print-history`, noch nicht am Drucker getestet):** Druckverlauf pro Drucker in `<Drucker>.history.jobs` (letzte 50 beendete/fehlgeschlagene Drucke als JSON) – Datenquelle für die Bambu-Anzeige in HomePilot.
 - **0.4.14:** `<Drucker>.raw.err2.err_code` als gemischter Typ: Der H2C sendet bei aktivem Fehler (z. B. Luftdruck-Fehlalarm am 22.11.2026) einen Text-Code, der vorher abgelehnt wurde. Format dieses Codes noch unbekannt.
 - **0.4.13:** Zugangsdaten-Vergleich mit dem Original-Adapter `bambulab` entfernt (Original wurde am 20.11.2026 deinstalliert); Zugangsdaten-Diagnose nur noch im Debug-Log. Verbindung und Datenpunkte unverändert.
 - **0.4.12:** Definitionen für die HMS-Felder `action` und `timestamp` (`<Drucker>.status.hms.<n>`) aus neuerer A1-Firmware (Warnung im Log vom 20.11.2026); sonst wie 0.4.11.
@@ -22,6 +23,7 @@ Einzige Statusdatei des Projekts. Sie wird nur auf `main` gepflegt, kurz gehalte
 - Lokale Druckersuche im Admin (Name, IP, Seriennummer, Modell); der Access Code wird immer manuell eingetragen.
 - Offline-Drucker bleiben beim Start still; Verbindungsverlust wird als Info mit Druckernamen geloggt.
 - Erkennung von Drucker-OTA- und AMS-Firmwareupdates (Präfixe `ams/`, `ams_f1/`, `n3f/`, `n3s/`).
+- Druckverlauf `<Drucker>.history.jobs` (ab dem Branch `feature/print-history`): Eintrag beim Wechsel von einem aktiven Zustand nach `FINISH`/`FAILED`; Drucke, die enden, während der Adapter nicht läuft, fehlen.
 - Warnungsdatei `warnMessages.json` liegt im Instanz-Datenverzeichnis.
 
 ## Tests
